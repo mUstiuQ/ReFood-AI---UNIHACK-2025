@@ -31,7 +31,13 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_markdown: ^0.7.0
+
+
   google_maps_flutter: ^2.5.3
+
+  lucide_icons: ^0.257.0 # Poți folosi cea mai recentă versiune
+  flutter_staggered_grid_view: ^0.7.0 # Pachetul necesar pentru grilă
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

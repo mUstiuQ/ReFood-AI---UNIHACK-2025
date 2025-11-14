@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unihack_2025/DashboardScreen.dart';
 import 'StartPage.dart';
 
 void main() {
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Recomandat pentru aplicațiile Flutter
       title: 'ReFood AI App',
       // 2. Apelarea codului tău:
-      home: const ReFoodHome(),
+      home: const DashboardScreen(),
     );
   }
 }
