@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 // Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
 import 'NewStartPage.dart';
 import 'chatbot_screen.dart';
-// import 'TimisoaraMapScreen.dart'; // Dacă ai implementat harta
+// import 'TimisoaraMapScreen.dart';// Dacă ai implementat harta
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
