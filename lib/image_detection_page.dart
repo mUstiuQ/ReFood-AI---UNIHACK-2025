@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:typed_data'; // Necesar pentru Uint8List
 import 'package:lucide_icons/lucide_icons.dart';
-import 'DashboardScreen.dart'; // Navigare înapoi la Dashboard
+import 'dashboard_screen.dart'; // Navigare înapoi la Dashboard
 
 class ImageDetectionPage extends StatefulWidget {
   const ImageDetectionPage({super.key});
@@ -21,6 +21,8 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
   String? _analysis;
 
   // ATENȚIE: Cheia API este hardcodată, înlocuiește-o cu cheia ta reală!
+  // ❗️ WARNING: DO NOT PUBLISH YOUR APP WITH THIS KEY HERE.
+  // Your key will be stolen. Use dart-define instead.
   static const String _apiKey = 'AIzaSyBEU3k_LbMxtl7I4LlVxOd5YF-29kfEWLc';
 
   Future<void> _pickImage(ImageSource source) async {
@@ -154,25 +156,29 @@ Format your response in a clear, structured way.''';
           onPressed: () => Navigator.pop(context),
         ),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Food Scanner',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueGrey.shade900,
+        // --- FIX 1: WRAPPED IN EXPANDED ---
+        // This prevents the text from overflowing the Row.
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Food Scanner',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey.shade900,
+                ),
               ),
-            ),
-            Text(
-              'AI-powered food freshness detection',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.blueGrey.shade600,
+              Text(
+                'AI-powered food freshness detection',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.blueGrey.shade600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -356,25 +362,29 @@ Format your response in a clear, structured way.''';
                       color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Analysis Results',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueGrey.shade900,
+                // --- FIX 2: WRAPPED IN EXPANDED ---
+                // This prevents the text from overflowing the Row.
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Analysis Results',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueGrey.shade900,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'AI-powered food assessment',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blueGrey.shade600,
+                      Text(
+                        'AI-powered food assessment',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blueGrey.shade600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

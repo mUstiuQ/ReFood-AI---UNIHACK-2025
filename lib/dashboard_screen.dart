@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'ImageDetectionPage.dart';
+import 'image_detection_page.dart';
 
 // Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
-import 'NewStartPage.dart';
+import 'new_start_page.dart';
 import 'chatbot_screen.dart';
-// import   'TimisoaraMapScreen.dart';// Dacă ai implementat harta
+// import   'timisoara_map_screen.dart';// Dacă ai implementat harta
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

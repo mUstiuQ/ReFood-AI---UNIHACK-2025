@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:unihack_2025/DashboardScreen.dart';
-import 'NewStartPage.dart';
+import 'package:unihack_2025/dashboard_screen.dart';
+import 'new_start_page.dart';
 import 'chatbot_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

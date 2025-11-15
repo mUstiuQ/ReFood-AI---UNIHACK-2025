@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'DashboardScreen.dart'; // Asigură-te că DashboardScreen.dart este calea corectă
-import 'LearnMoreScreen.dart';
-import 'WasteReductionChartsScreen.dart';
+import 'dashboard_screen.dart'; // Asigură-te că dashboard_screen.dart este calea corectă
+import 'learn_more_screen.dart';
+import 'waste_reduction_charts_screen.dart';
 
 class NewStartPage extends StatefulWidget {
   const NewStartPage({super.key});
@@ -108,6 +108,9 @@ class _NewStartPageState extends State<NewStartPage>
       ),
     );
 
+    // Verificare pentru ecran mobil, pentru a ajusta fonturile
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       body: Container(
         decoration: backgroundGradient,
@@ -172,7 +175,7 @@ class _NewStartPageState extends State<NewStartPage>
                                   "Reduce Food Waste\nwith AI Intelligence",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 48,
+                                    fontSize: isMobile ? 36 : 48, // Ajustat pentru mobil
                                     fontWeight: FontWeight.bold,
                                     color: Colors.blueGrey.shade900,
                                     height: 1.1,
@@ -183,7 +186,7 @@ class _NewStartPageState extends State<NewStartPage>
                                   "Transform your kitchen into a sustainable powerhouse. Save money, reduce waste, and help the planet with intelligent food management.",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: isMobile ? 18 : 20, // Ajustat pentru mobil
                                     color: Colors.blueGrey.shade600,
                                   ),
                                 ),
@@ -196,18 +199,20 @@ class _NewStartPageState extends State<NewStartPage>
                                     shaderCallback: (bounds) => LinearGradient(
                                       colors: [Colors.orange.shade600, Colors.green.shade600, Colors.teal.shade600],
                                     ).createShader(bounds),
-                                    child: const Text(
+                                    child: Text(
                                       "\"Don't waste it! Taste it!\"",
-                                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                                      style: TextStyle(fontSize: isMobile ? 24 : 28, fontWeight: FontWeight.bold, color: Colors.white),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 40),
 
-                                // CTA Buttons
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                // --- FIX: ÎNLOCUIT ROW CU WRAP ---
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  spacing: 16.0, // Spațiul orizontal dintre butoane
+                                  runSpacing: 16.0, // Spațiul vertical dacă se înfășoară
                                   children: [
                                     // Butonul "Get Started" (Navighează la Dashboard)
                                     AnimatedScale(
@@ -235,34 +240,31 @@ class _NewStartPageState extends State<NewStartPage>
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 20),
                                     // Butonul "Learn More"
                                     AnimatedScale(
-
                                       scale: _isVisible ? 1.0 : 0.9,
                                       duration: const Duration(milliseconds: 500),
                                       child: OutlinedButton(
                                         onPressed: () {
-                                          // ADAUGĂ ACEASTĂ LOGICĂ DE NAVIGARE:
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => const LearnMoreScreen(),
+                                              builder: (context) => LearnMoreScreen(),
                                             ),
                                           );
                                         },
-                                        child: const Text("Learn More", style: TextStyle(fontSize: 18)),
-
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                           side: BorderSide(color: Colors.blueGrey.shade300, width: 2),
                                           foregroundColor: Colors.blueGrey.shade700,
                                         ),
+                                        child: const Text("Learn More", style: TextStyle(fontSize: 18)),
                                       ),
                                     ),
                                   ],
                                 ),
+                                // --- SFÂRȘITUL FIX-ULUI ---
                                 const SizedBox(height: 60),
 
                                 // Floating Stats (Clickable)
@@ -302,7 +304,8 @@ class _NewStartPageState extends State<NewStartPage>
 
 // --- WIDGETS AUXILIARE ---
 
-// Widget pentru Fundalul Animat (simulează Framer Motion cu repeat: Infinity)
+// ... (Restul widget-urilor auxiliare rămân neschimbate) ...
+// (AnimatedBlobBackground, RotationSparkles, FloatingStatsSection, StatCard)
 class AnimatedBlobBackground extends StatelessWidget {
   const AnimatedBlobBackground({super.key});
 
@@ -369,7 +372,6 @@ class AnimatedBlobBackground extends StatelessWidget {
   }
 }
 
-// Widget pentru animația Sparkles
 class RotationSparkles extends StatefulWidget {
   const RotationSparkles({super.key});
 
@@ -411,7 +413,6 @@ class _RotationSparklesState extends State<RotationSparkles>
   }
 }
 
-// Secțiunea de Statistici (acum sunt Link-uri)
 class FloatingStatsSection extends StatelessWidget {
   const FloatingStatsSection({super.key});
 
@@ -427,12 +428,13 @@ class FloatingStatsSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 768;
           return GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: constraints.maxWidth > 768 ? 3 : 1,
-              childAspectRatio: 2.0,
+              crossAxisCount: isMobile ? 1 : 3, // O coloană pe mobil
+              childAspectRatio: isMobile ? 2.5 : 2.0, // Ajustat pentru mobil
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
@@ -448,7 +450,6 @@ class FloatingStatsSection extends StatelessWidget {
   }
 }
 
-// Cardul de Statistică cu efect de Hover/Tap
 class StatCard extends StatefulWidget {
   final Map<String, dynamic> stat;
   const StatCard({super.key, required this.stat});
@@ -560,7 +561,6 @@ class _StatCardState extends State<StatCard> {
   }
 }
 
-
 // Secțiunea de Caracteristici
 class FeaturesSection extends StatelessWidget {
   final List<Map<String, dynamic>> features;
@@ -594,12 +594,14 @@ class FeaturesSection extends StatelessWidget {
               const SizedBox(height: 60),
               LayoutBuilder(
                 builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 600;
+                  final isTablet = constraints.maxWidth < 900;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: constraints.maxWidth > 900 ? 3 : 1,
-                      childAspectRatio: constraints.maxWidth > 900 ? 1.0 : 2.5,
+                      crossAxisCount: isMobile ? 1 : (isTablet ? 1 : 3), // O coloană pe mobil/tabletă mică
+                      childAspectRatio: isMobile ? 1.8 : (isTablet ? 2.5 : 1.0), // Ajustat
                       crossAxisSpacing: 24,
                       mainAxisSpacing: 24,
                     ),
@@ -727,10 +729,16 @@ class _FeatureCardState extends State<FeatureCard>
                               color: Colors.blueGrey.shade900),
                         ),
                         const SizedBox(height: 8),
+
+                        // --- ACESTA ESTE FIX-UL ---
+                        // Am șters widget-ul 'Expanded' care provoca eroarea.
                         Text(
                           widget.feature['description'] as String,
                           style: TextStyle(color: Colors.blueGrey.shade600, height: 1.5),
                         ),
+
+                        // Acest 'if' trebuie să fie *după* descriere,
+                        // dar 'Expanded' îl împingea în afara ecranului.
                         if (isClickable)
                           Padding(
                             padding: const EdgeInsets.only(top: 12.0),
@@ -762,8 +770,10 @@ class FinalCTASection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 80, horizontal: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green.shade600, Colors.teal.shade600, Colors.green.shade600],
@@ -779,13 +789,13 @@ class FinalCTASection extends StatelessWidget {
               Text(
                 "Ready to Transform Your Kitchen?",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: isMobile ? 30 : 36, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               const SizedBox(height: 16),
               Text(
                 "Join thousands making a difference. Start reducing waste and saving money today.",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, color: Colors.green.shade50),
+                style: TextStyle(fontSize: isMobile ? 16 : 18, color: Colors.green.shade50),
               ),
               const SizedBox(height: 40),
               ElevatedButton.icon(
@@ -798,9 +808,9 @@ class FinalCTASection extends StatelessWidget {
                   );
                 },
                 icon: const Icon(LucideIcons.zap, size: 24),
-                label: const Text("Start Your Journey", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                label: Text("Start Your Journey", style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: isMobile ? 16 : 20),
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.green.shade700,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
