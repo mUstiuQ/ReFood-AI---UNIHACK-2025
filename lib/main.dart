@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:unihack_2025/DashboardScreen.dart';
-import 'StartPage.dart';
+import 'pages/login_page.dart';
+import 'app_theme.dart'; // Import the shared theme
 
 void main() {
   runApp(const MyApp());
@@ -12,11 +12,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Recomandat pentru aplicațiile Flutter
+      debugShowCheckedModeBanner: false,
       title: 'ReFood AI App',
-      // 2. Apelarea codului tău:
-      home: const DashboardScreen(),
+      theme: ThemeData(
+        primaryColor: primaryGreen,
+        scaffoldBackgroundColor: lightGreenBg,
+        colorScheme: ColorScheme.fromSeed(seedColor: primaryGreen),
+        useMaterial3: true,
+      ),
+      home: const LoginPage(),
     );
   }
 }
-
