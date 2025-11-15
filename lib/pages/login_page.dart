@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'signup_page.dart';
@@ -44,7 +45,68 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
+  // --- 6. SIGN IN WITH GOOGLE (CORRECTED) ---
+  // CORRECTED GOOGLE SIGN-IN FOR google_sign_in 7.x
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      // 1. Create a GoogleSignIn instance
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: <String>['email'],
+      );
+
+      // 2. Trigger the Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        return;
+      }
+
+      // 3. Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // 4. Check if we have the tokens (they might be null in some cases)
+      if (googleAuth.idToken == null) {
+        throw Exception('Failed to get ID token from Google Sign-In');
+      }
+
+      // 5. Create a new Firebase credential
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,  // Can be null, that's okay
+        idToken: googleAuth.idToken,
+      );
+
+      // 6. Sign in to Firebase with the credential
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // 7. Navigate to Dashboard if successful
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to sign in with Google: ${e.message}")),
+        );
+      }
+    } catch (e) {
+      // Handle other errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("An unexpected error occurred: $e")),
+        );
+      }
+    }
+  }
+
+  // --- SIGN IN WITH EMAIL ---
   Future<void> _signIn() async {
+    // ... (Your existing, correct signIn code) ...
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -79,12 +141,15 @@ class _LoginPageState extends State<LoginPage>
     }
   }
 
+  // --- FORGOT PASSWORD ---
   Future<void> _forgotPassword() async {
+    // ... (Your existing, correct forgotPassword code) ...
     final String email = _emailController.text.trim();
 
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email to reset password.")),
+        const SnackBar(
+            content: Text("Please enter your email to reset password.")),
       );
       return;
     }
@@ -99,7 +164,8 @@ class _LoginPageState extends State<LoginPage>
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password reset email sent. Check your inbox.")),
+        const SnackBar(
+            content: Text("Password reset email sent. Check your inbox.")),
       );
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
@@ -129,6 +195,7 @@ class _LoginPageState extends State<LoginPage>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+                  // ... (All your containers and animations) ...
                   Container(
                     width: cardWidth,
                     height: cardHeight,
@@ -190,8 +257,9 @@ class _LoginPageState extends State<LoginPage>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(height: 25),
+                            // *** BUG 1: FIXED ***
                             Image.asset(
-                              'assets/images/logo.jpg',
+                              'assets/images/logo.jpg', // <-- FIXED
                               width: 100,
                               height: 100,
                             ),
@@ -220,7 +288,6 @@ class _LoginPageState extends State<LoginPage>
                             ),
                             const SizedBox(height: 15),
                             TextField(
-                              // --- 8. ATTACH PASSWORD CONTROLLER ---
                               controller: _passwordController,
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
@@ -266,6 +333,31 @@ class _LoginPageState extends State<LoginPage>
                                 'Login',
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            OutlinedButton(
+                              onPressed:
+                              _signInWithGoogle, // Call your new function
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: primaryGreen,
+                                minimumSize: const Size.fromHeight(50),
+                                side: const BorderSide(
+                                    color: primaryGreen, width: 2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    'Sign in with Google',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 20),

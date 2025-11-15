@@ -12,7 +12,20 @@
           "package_name": "com.example.unihack_2025"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "104102375060-r5bbs3uvnbddq6b5ib5g5poethnghivq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.unihack_2025",
+            "certificate_hash": "dc9823993431c25d5d25a6366b4a0df8932117f6"
+          }
+        },
+        {
+          "client_id": "104102375060-b74rgpusrd27so2pmgfdd83da8eamhds.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDBh5bhgAzQdAWPubS_4xIk0LvEhoICfDY"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "104102375060-b74rgpusrd27so2pmgfdd83da8eamhds.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
