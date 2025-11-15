@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:unihack_2025/DashboardScreen.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'NewStartPage.dart';
-import 'chatbot_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initializare Hive
+  await Hive.initFlutter();
+
+  // Deschidem box-urile
+  var chatBox = await Hive.openBox('chatBox');
+  var donationsBox = await Hive.openBox('donations');
+
+  // 🔥 Resetare box-uri O SINGURĂ DATĂ
+  if (!chatBox.containsKey('initialized')) {
+    await chatBox.clear();
+    await donationsBox.clear();
+    await chatBox.put('__app_initialized__', true);
+  }
+
+  // Incarcam .env
+  await dotenv.load(fileName: ".env");
 
   runApp(const MyApp());
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");  // trebuie exact numele fișierului asta in main inainte de rurale a aplicatiei
 }
 
 class MyApp extends StatelessWidget {
@@ -17,11 +33,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Recomandat pentru aplicațiile Flutter
+      debugShowCheckedModeBanner: false,
       title: 'ReFood AI App',
-      // 2. Apelarea codului tău:
       home: const NewStartPage(),
     );
   }
 }
-

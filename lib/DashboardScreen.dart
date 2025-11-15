@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'ImageDetectionPage.dart';
 import 'FoodMapScreen.dart';
-import 'FoodSaverGameScreen.dart';
 import 'SavingsCalculatorScreen.dart';
+import 'FoodSaverGameScreen.dart';
+import 'DonateFood.dart';
 
 // Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
 import 'NewStartPage.dart';
@@ -165,11 +166,20 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
           );
         }
 
+        else if(feature['page'] == '/donate-food') { // NOU: Logica DonateFood
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DonateFoodPage(),
+            ),
+          );
+        }
+
         else if(feature['page'] == '/food-saver-game') { // NOU: Logica Jocului
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const FoodSaverGameScreen(),
+              builder: (context) => const FoodSaverGame(),
             ),
           );
         }
