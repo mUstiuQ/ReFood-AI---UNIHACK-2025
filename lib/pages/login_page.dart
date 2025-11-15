@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'signup_page.dart';
-import '../app_theme.dart'; // Import shared theme
-import '../widgets/neon_background.dart'; // Import shared widget
+import '../app_theme.dart';
+import '../widgets/neon_background.dart';
 
-// --- Page Constants ---
 const double cardWidth = 320;
 const double cardHeight = 480;
 
-// --- Main Login Page Widget ---
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -43,12 +41,11 @@ class _LoginPageState extends State<LoginPage>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: lightGreenBg, // Use light green background
+      backgroundColor: lightGreenBg,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // --- This is the animated card ---
             ClipRRect(
               borderRadius: const BorderRadius.all(
                 Radius.circular(20),
@@ -56,7 +53,6 @@ class _LoginPageState extends State<LoginPage>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // 1. Base card with shadow
                   Container(
                     width: cardWidth,
                     height: cardHeight,
@@ -71,7 +67,6 @@ class _LoginPageState extends State<LoginPage>
                       ],
                     ),
                   ),
-                  // 2. Top-left animated border
                   Positioned(
                     top: cardHeight / 2,
                     left: cardWidth / 2,
@@ -86,7 +81,6 @@ class _LoginPageState extends State<LoginPage>
                       ],
                     ),
                   ),
-                  // 3. Bottom-right animated border
                   Positioned(
                     bottom: cardHeight / 2,
                     right: cardWidth / 2,
@@ -101,7 +95,6 @@ class _LoginPageState extends State<LoginPage>
                       ],
                     ),
                   ),
-                  // 4. Inner container with form
                   GestureDetector(
                     onTap: () {
                       FocusManager.instance.primaryFocus!.unfocus();
@@ -116,7 +109,6 @@ class _LoginPageState extends State<LoginPage>
                           Radius.circular(20),
                         ),
                       ),
-                      // --- This is the Login Form ---
                       child: SingleChildScrollView(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -201,13 +193,11 @@ class _LoginPageState extends State<LoginPage>
                           ],
                         ),
                       ),
-                      // --- End of form ---
                     ),
                   ),
                 ],
               ),
             ),
-            // --- Sign Up Button ---
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

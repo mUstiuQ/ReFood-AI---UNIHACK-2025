@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import '../app_theme.dart'; // Import shared theme
-import '../widgets/neon_background.dart'; // Import shared widget
+import '../app_theme.dart';
+import '../widgets/neon_background.dart';
 
-// --- Page Constants ---
 const double cardWidth = 320;
-// Increased height to make room for the extra field
 const double cardHeight = 560;
 
-// --- Main Sign Up Page Widget ---
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -116,13 +113,11 @@ class _SignUpPageState extends State<SignUpPage>
                           Radius.circular(20),
                         ),
                       ),
-                      // --- This is the Sign Up Form ---
                       child: SingleChildScrollView(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(height: 25),
-                            // Logo (uses the same asset)
                             Image.asset(
                               'assets/images/logo.jpg',
                               width: 100,
@@ -152,7 +147,6 @@ class _SignUpPageState extends State<SignUpPage>
                               keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 15),
-                            // Password Field
                             TextField(
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
@@ -175,7 +169,6 @@ class _SignUpPageState extends State<SignUpPage>
                               ),
                             ),
                             const SizedBox(height: 15),
-                            // *** NEW FIELD ***
                             TextField(
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
@@ -198,10 +191,8 @@ class _SignUpPageState extends State<SignUpPage>
                               ),
                             ),
                             const SizedBox(height: 25),
-                            // *** BUTTON TEXT CHANGED ***
                             ElevatedButton(
                               onPressed: () {
-                                // Sign up logic
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryGreen,
@@ -221,13 +212,11 @@ class _SignUpPageState extends State<SignUpPage>
                           ],
                         ),
                       ),
-                      // --- End of form ---
                     ),
                   ),
                 ],
               ),
             ),
-            // --- "Go Back" Button ---
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -235,7 +224,6 @@ class _SignUpPageState extends State<SignUpPage>
                     style: TextStyle(color: grey)),
                 TextButton(
                   onPressed: () {
-                    // This will close the sign up page and go back
                     Navigator.pop(context);
                   },
                   child: const Text(

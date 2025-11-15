@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
-import 'app_theme.dart'; // Import the shared theme
+import 'app_theme.dart';
 
 void main() {
   runApp(const MyApp());
