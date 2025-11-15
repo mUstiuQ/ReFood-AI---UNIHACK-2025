@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'ImageDetectionPage.dart';
 
 // Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
 import 'NewStartPage.dart';
@@ -142,7 +143,16 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
               builder: (context) =>  ChatBotPage(),
             ),
           );
-        } else {
+        }
+        else if (feature['page'] == '/image-detection') { // NOU: Logica Food Scanner
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ImageDetectionPage(),
+            ),
+          );
+        }
+        else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Navigare la ${feature['title']} (WIP)')),
           );
@@ -150,6 +160,8 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
       },
     );
   }
+
+
 
   // Widget pentru o singură statistică
   Widget _buildStatCard(Map<String, dynamic> stat, int index) {
