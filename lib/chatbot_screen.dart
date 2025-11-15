@@ -1,426 +1,227 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-// Simulare client API (pentru a înlocui base44.integrations.Core.InvokeLLM)
-class AIService {
-  static Future<String> invokeLLM(String prompt) async {
-    // Simulează o întârziere și un răspuns de la un model LLM
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Logică simplă de răspuns (înlocuiește cu API-ul tău real)
-    if (prompt.toLowerCase().contains('hello') || prompt.toLowerCase().contains('salut')) {
-      return 'Salut! Mă bucur că ești aici. Cum pot să te ajut să reduci risipa alimentară?';
-    } else if (prompt.toLowerCase().contains('reduce food waste')) {
-      return 'Pentru a reduce risipa, începe prin a verifica frigiderul înainte de a merge la cumpărături și folosește metoda FIFO (First In, First Out) în bucătărie. Poți folosi și rețete creative pentru resturi!';
-    } else {
-      return 'Îmi cer scuze, dar nu pot răspunde la întrebarea ta chiar acum. Încearcă să mă întrebi despre sfaturi de stocare, rețete cu resturi sau planificare a meselor.';
-    }
-  }
-}
-
-class Message {
-  final String role; // 'user' sau 'assistant'
-  final String content;
-
-  Message({required this.role, required this.content});
-}
-
-class ChatBotScreen extends StatefulWidget {
-  const ChatBotScreen({super.key});
-
+class ChatBotPage extends StatefulWidget {
   @override
-  State<ChatBotScreen> createState() => _ChatBotScreenState();
+  _ChatBotPageState createState() => _ChatBotPageState();
 }
 
-class _ChatBotScreenState extends State<ChatBotScreen> {
-  final ScrollController _scrollController = ScrollController();
-  final TextEditingController _textController = TextEditingController();
-  bool _isLoading = false;
-
-  final List<Message> _messages = [
-    Message(
-      role: 'assistant',
-      content:
-      'Hello! 👋 I\'m your ReFood AI assistant. I can help you with food waste reduction tips, recipe suggestions, storage advice, and sustainability questions. How can I help you today?',
-    )
+class _ChatBotPageState extends State<ChatBotPage> {
+  List<Map<String, String>> messages = [
+    {
+      'role': 'assistant',
+      'content':
+      'Hello! 👋 I\'m your ReFood AI assistant. I can help with food waste tips, recipes, and storage advice.'
+    }
   ];
+  TextEditingController _controller = TextEditingController();
+  bool isLoading = false;
 
-  final List<String> _quickActions = const [
+  final List<String> quickActions = [
     'How can I reduce food waste?',
     'Recipe ideas with leftovers',
     'Best way to store vegetables',
     'Tips for meal planning'
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+  ScrollController _scrollController = ScrollController();
+
+  void scrollToBottom() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent + 100,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _textController.dispose();
-    super.dispose();
-  }
+  Future<String> callGemeniAPI(String userMessage) async {
+    final apiKey = 'AIzaSyD5lXnJFoiP9NOChTGDDnHV7sOekA-dcRg'; // înlocuiește cu cheia ta
+    final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
+    final payload = {
+      "contents": [
+        {
+          "parts": [
+            {"text": userMessage+" with short text without * and use - for ideas"}
+          ]
+        }
+      ]
+    };
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
+    print('--- Sending to Gemini API ---');
+    print(jsonEncode(payload));
 
-  Future<void> _handleSend() async {
-    final userMessage = _textController.text.trim();
-    if (userMessage.isEmpty || _isLoading) return;
-
-    _textController.clear();
-
-    setState(() {
-      _messages.add(Message(role: 'user', content: userMessage));
-      _isLoading = true;
-    });
-
-    // Asigură scroll la mesajul utilizatorului
-    _scrollToBottom();
-
-    // Construiește promptul
-    final prompt = """
-        You are a helpful ReFood AI assistant specializing in food waste reduction, sustainability, recipe suggestions, and food storage tips. 
-        
-        User question: $userMessage
-
-        Provide helpful, practical advice in a friendly tone. Keep responses concise but informative.
-        """;
 
     try {
-      final response = await AIService.invokeLLM(prompt);
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: jsonEncode(payload),
+      );
 
-      setState(() {
-        _messages.add(Message(role: 'assistant', content: response));
-      });
-    } catch (error) {
-      setState(() {
-        _messages.add(Message(
-            role: 'assistant',
-            content: 'I apologize, but I encountered an error. Please try again.'));
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-      // Asigură scroll la răspunsul asistentului
-      _scrollToBottom();
+      // Printăm status code
+      print('Status code: ${response.statusCode}');
+
+      // Printăm răspunsul brut
+      print('--- Response from Gemini ---');
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Printăm obiectul JSON decodat
+        print('--- Decoded JSON ---');
+        print(data);
+
+        final output = data['candidates'][0]['content']['parts'][0]['text'];
+        print('--- Extracted AI content ---');
+        print(output);
+
+        return output;
+      } else {
+        print('Error from API: ${response.body}');
+        return 'I apologize, but I encountered an error: ${response
+            .statusCode}';
+      }
+    } catch (e) {
+      print('Exception during API call: $e');
+      return 'I encountered an error.';
     }
   }
+  void handleSend() async {
+    String userMessage = _controller.text.trim();
+    if (userMessage.isEmpty || isLoading) return;
 
-  void _onQuickActionTap(String action) {
-    _textController.text = action;
-    _handleSend();
+    setState(() {
+      messages.add({'role': 'user', 'content': userMessage});
+      _controller.clear();
+      isLoading = true;
+    });
+
+    scrollToBottom();
+
+    String aiResponse = await callGemeniAPI(userMessage);
+
+    setState(() {
+      messages.add({'role': 'assistant', 'content': aiResponse});
+      isLoading = false;
+    });
+
+    scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Definirea gradientului de fundal (from-blue-50 via-white to-cyan-50)
-    final backgroundGradient = BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.blue.shade50,
-          Colors.white,
-          Colors.cyan.shade50,
-        ],
-      ),
-    );
-
     return Scaffold(
-      body: Container(
-        decoration: backgroundGradient,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // HEADER
-              _buildHeader(context),
+      appBar: AppBar(
+        title: Text('AI Assistant'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Column(
+        children: [
+          // Messages List
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: EdgeInsets.all(16),
+              itemCount: messages.length + (isLoading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == messages.length) {
+                  return Row(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 10),
+                      Text('Thinking...'),
+                    ],
+                  );
+                }
 
-              // MESSAGES CONTAINER
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: _messages.length + (_isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _messages.length) {
-                        // Afișează indicatorul de încărcare (Thinking...)
-                        return _buildThinkingIndicator();
-                      }
-                      final message = _messages[index];
-                      return _buildMessageBubble(message, index);
-                    },
+                final message = messages[index];
+                bool isUser = message['role'] == 'user';
+                return Container(
+                  margin: EdgeInsets.symmetric(vertical: 5),
+                  alignment:
+                  isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    padding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isUser ? Colors.blueAccent : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      message['content']!,
+                      style: TextStyle(
+                        color: isUser ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Quick Actions
+          if (messages.length == 1)
+            Wrap(
+              spacing: 8,
+              children: quickActions.map((action) {
+                return ElevatedButton(
+                  onPressed: () {
+                    _controller.text = action;
+                  },
+                  child: Text(action),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[200],
+                    foregroundColor: Colors.black87,
+                    shape: StadiumBorder(),
+                  ),
+                );
+              }).toList(),
+            ),
+
+          // Input Field
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    onSubmitted: (_) => handleSend(),
+                    decoration: InputDecoration(
+                      hintText: 'Ask me anything about food waste...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                    ),
                   ),
                 ),
-              ),
-
-              // QUICK ACTIONS
-              if (_messages.length == 1 && !_isLoading) _buildQuickActions(),
-
-              // INPUT AREA
-              _buildInputArea(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- WIDGET BUILDERS ---
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        border: Border(bottom: BorderSide(color: Colors.blueGrey.shade200)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(LucideIcons.arrowLeft, size: 20),
-            onPressed: () => Navigator.pop(context), // Navigare înapoi la Dashboard
-            color: Colors.blueGrey.shade700,
-          ),
-          const SizedBox(width: 8),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade500, Colors.cyan.shade500],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('AI Assistant',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87)),
-              Text('Always here to help',
-                  style: TextStyle(fontSize: 12, color: Colors.blueGrey.shade500)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(Message message, int index) {
-    final bool isUser = message.role == 'user';
-    final Color bubbleColor = isUser ? const Color(0xFF1E88E5) : Colors.white; // Blue/Cyan Gradient pentru user, Alb pentru assistant
-    final Color textColor = isUser ? Colors.white : Colors.blueGrey.shade800;
-
-    // Simulează motion.div initial={{ opacity: 0, y: 20 }}
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      margin: const EdgeInsets.only(bottom: 12.0),
-      child: ScaleTransition( // Simulează o animație de apariție (initial: scale 0.9, animate: scale 1.0)
-        scale: Tween<double>(begin: 0.9, end: 1.0).animate(
-            CurvedAnimation(
-              parent: AlwaysStoppedAnimation(1.0), // Nu folosim controller explicit pentru fiecare mesaj
-              curve: Curves.easeOut,
-            )
-        ),
-        child: Container(
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: bubbleColor,
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(20),
-              topRight: const Radius.circular(20),
-              bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(4),
-              bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(20),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(isUser ? 0.2 : 0.05),
-                blurRadius: 4,
-              )
-            ],
-            // Aplică gradient pentru user, similar cu 'bg-gradient-to-br from-blue-600 to-cyan-600'
-            gradient: isUser
-                ? LinearGradient(
-              colors: [Colors.blue.shade600, Colors.cyan.shade600],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            )
-                : null,
-          ),
-          child: isUser
-              ? Text(message.content, style: TextStyle(color: textColor))
-              : MarkdownBody(
-            data: message.content,
-            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-              p: TextStyle(color: textColor, fontSize: 14),
-              // Poți adăuga mai multe stiluri pentru Markdown aici (h1, strong, etc.)
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThinkingIndicator() {
-    // Simulează thinking indicator cu motion.div
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12.0),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.blueGrey.shade200),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)), // blue-500
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text('Thinking...', style: TextStyle(color: Colors.blueGrey.shade600)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children: _quickActions.map((action) {
-          // Simulează motion.button cu whileHover/whileTap și staggered animation
-          return GestureDetector(
-            onTap: () => _onQuickActionTap(action),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.blueGrey.shade200),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: handleSend,
+                  style: ElevatedButton.styleFrom(
+                    shape: CircleBorder(),
+                    padding: EdgeInsets.all(12),
+                  ),
+                  child: isLoading
+                      ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
-                ],
-              ),
-              child: Text(
-                action,
-                style: TextStyle(fontSize: 14, color: Colors.blueGrey.shade700),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildInputArea() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        border: Border(top: BorderSide(color: Colors.blueGrey.shade200)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              decoration: InputDecoration(
-                hintText: "Ask me anything about food waste...",
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blueGrey.shade300),
+                      : Icon(Icons.send),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blueGrey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Color(0xFF3B82F6), width: 2), // Focus border similar cu blue-500
-                ),
-              ),
-              onSubmitted: (_) => _handleSend(), // Permite trimiterea cu tasta Enter
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
-              enabled: !_isLoading,
+              ],
             ),
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: _textController.text.trim().isEmpty || _isLoading ? null : _handleSend,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              backgroundColor: Color(0xFF3B82F6), // blue-600
-              disabledBackgroundColor: Colors.blueGrey.shade200,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 4,
-              shadowColor: Colors.blue.shade300,
-            ),
-            child: _isLoading
-                ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
-                : const Icon(LucideIcons.send, color: Colors.white, size: 24),
           ),
         ],
       ),

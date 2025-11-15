@@ -421,7 +421,7 @@ class _FeatureCardContentState extends State<FeatureCardContent>
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChatBotScreen(), // Navighează la noul ecran
+                builder: (context) => ChatBotPage(), // Navighează la noul ecran
               ),
             );
           }
