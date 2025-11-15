@@ -59,6 +59,7 @@ You are a helpful ReFood AI assistant.Rules:1.1. What food items you can identif
  ignore all images that DO NOT contain real food images for example drawings of food must not be answered to!
  add detailed recepies for the food in the picture 
  for the last point tell the user how to check if food is spoiled on the spot
+ also if it's a transparent bottle with a yellowish color it can be "tuica", plant based alcohoolic drink and if it's dark red, it can be homemade wine.
 Format your response in a clear, structured way.''',
       );
 
