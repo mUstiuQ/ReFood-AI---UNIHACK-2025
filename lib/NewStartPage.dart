@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'DashboardScreen.dart'; // Asigură-te că DashboardScreen.dart este calea corectă
+import 'LearnMoreScreen.dart';
+import 'WasteReductionChartsScreen.dart';
 
 class NewStartPage extends StatefulWidget {
   const NewStartPage({super.key});
@@ -236,12 +238,21 @@ class _NewStartPageState extends State<NewStartPage>
                                     const SizedBox(width: 20),
                                     // Butonul "Learn More"
                                     AnimatedScale(
+
                                       scale: _isVisible ? 1.0 : 0.9,
                                       duration: const Duration(milliseconds: 500),
-                                      //delay: const Duration(milliseconds: 100),
                                       child: OutlinedButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          // ADAUGĂ ACEASTĂ LOGICĂ DE NAVIGARE:
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => const LearnMoreScreen(),
+                                            ),
+                                          );
+                                        },
                                         child: const Text("Learn More", style: TextStyle(fontSize: 18)),
+
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -482,10 +493,23 @@ class _StatCardState extends State<StatCard> {
         onTapCancel: _onTapCancel,
         onTap: () {
           // Aici s-ar face navigarea către paginile specifice (e.g., WasteReductionCharts)
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Navigare la ${widget.stat['label']} (WIP)')),
-          );
+
+          if (widget.stat['label'] == 'Average Waste Reduction') {
+            // Navigare la Ecranul de Grafice (WasteReductionChartsScreen)
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const WasteReductionChartsScreen(),
+              ),
+            );
+          } else {
+            // Logica pentru celelalte carduri rămâne ca simplu SnackBar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Navigare la ${widget.stat['label']} (WIP)')),
+            );
+          }
         },
+
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 150),

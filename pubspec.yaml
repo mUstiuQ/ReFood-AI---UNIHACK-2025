@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
 
   flutter_markdown: ^0.7.0
+  fl_chart: ^0.68.0
+
 
 
 
