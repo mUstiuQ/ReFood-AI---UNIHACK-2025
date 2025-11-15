@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ChatBotPage extends StatefulWidget {
   @override
   _ChatBotPageState createState() => _ChatBotPageState();
 }
+
+
 
 class _ChatBotPageState extends State<ChatBotPage> {
   List<Map<String, String>> messages = [
@@ -36,21 +39,18 @@ class _ChatBotPageState extends State<ChatBotPage> {
   }
 
   Future<String> callGemeniAPI(String userMessage) async {
-    final apiKey = 'AIzaSyD5lXnJFoiP9NOChTGDDnHV7sOekA-dcRg'; // înlocuiește cu cheia ta
+    final apiKey =dotenv.env['GEMINI_API_KEY'] ?? '';
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
     final payload = {
       "contents": [
         {
           "parts": [
-            {"text": userMessage+" with short text without * and use - for ideas"}
+            {"text": "You are a helpful ReFood AI assistant.Rules:1. Only answer questions related to food waste, recipes, cooking, food storage, meal planning, or other food-related topics. Do not answer questions about unrelated topics.2. Provide practical and friendly advice.3. Respond in plain text only. Do NOT use Markdown, asterisks, dashes, or bullet points. Give text in simple sentences or numbered steps if needed.User question:$userMessage"}
           ]
         }
       ]
     };
-
-    print('--- Sending to Gemini API ---');
-    print(jsonEncode(payload));
 
 
     try {
@@ -63,23 +63,13 @@ class _ChatBotPageState extends State<ChatBotPage> {
         body: jsonEncode(payload),
       );
 
-      // Printăm status code
-      print('Status code: ${response.statusCode}');
-
-      // Printăm răspunsul brut
-      print('--- Response from Gemini ---');
-      print(response.body);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // Printăm obiectul JSON decodat
-        print('--- Decoded JSON ---');
-        print(data);
 
         final output = data['candidates'][0]['content']['parts'][0]['text'];
-        print('--- Extracted AI content ---');
-        print(output);
+
 
         return output;
       } else {
