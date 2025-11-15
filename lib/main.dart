@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
-import 'app_theme.dart'; // Import the shared theme
+import 'app_theme.dart';
+import 'pages/image_detection_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: primaryGreen),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      //home: const LoginPage(),
+      home: const ImageDetectionPage(),
     );
   }
 }
