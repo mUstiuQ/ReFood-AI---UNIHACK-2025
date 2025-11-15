@@ -11,6 +11,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
+//test
+
 class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin {
   // Controllere pentru animatii (simulând Framer Motion 'initial' și 'animate')
