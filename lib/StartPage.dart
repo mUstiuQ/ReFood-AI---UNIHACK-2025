@@ -263,6 +263,8 @@ class StatsGrid extends StatelessWidget {
     {"value": "10k+", "label": "Active Users"},
   ];
 
+  const StatsGrid({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Wrap(
@@ -351,6 +353,8 @@ class FeatureSection extends StatelessWidget {
     },
   ];
 
+  const FeatureSection({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -421,6 +425,8 @@ class FeatureSection extends StatelessWidget {
 
 // Final CTA
 class FinalCTA extends StatelessWidget {
+  const FinalCTA({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(

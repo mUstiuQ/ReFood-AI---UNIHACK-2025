@@ -53,7 +53,7 @@ class _TimisoaraMapScreenState extends State<TimisoaraMapScreen> {
         final place = places[i];
         _markers.add(
           Marker(
-            markerId: MarkerId('place_${i}'),
+            markerId: MarkerId('place_$i'),
             position: place['pos'],
             infoWindow: InfoWindow(
               title: place['name'],

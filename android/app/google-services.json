@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "104102375060",
+    "project_id": "refood-ai-80a86",
+    "storage_bucket": "refood-ai-80a86.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104102375060:android:68f11c54629d88594ece81",
+        "android_client_info": {
+          "package_name": "com.example.unihack_2025"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBh5bhgAzQdAWPubS_4xIk0LvEhoICfDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
