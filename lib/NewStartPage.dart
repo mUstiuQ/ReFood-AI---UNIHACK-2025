@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'DashboardScreen.dart'; // Asigură-te că DashboardScreen.dart este calea corectă
 import 'LearnMoreScreen.dart';
 import 'WasteReductionChartsScreen.dart';
+import 'SavingsCalculatorScreen.dart';
 
 class NewStartPage extends StatefulWidget {
   const NewStartPage({super.key});
@@ -502,6 +503,16 @@ class _StatCardState extends State<StatCard> {
                 builder: (context) => const WasteReductionChartsScreen(),
               ),
             );
+          }
+
+            else if (widget.stat['label'] == 'Annual Savings per Household') { // NOU: Annual Savings
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SavingsCalculatorScreen(),
+              ),
+            );
+
           } else {
             // Logica pentru celelalte carduri rămâne ca simplu SnackBar
             ScaffoldMessenger.of(context).showSnackBar(

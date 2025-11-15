@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'ImageDetectionPage.dart';
+import 'FoodMapScreen.dart';
+import 'FoodSaverGameScreen.dart';
+import 'SavingsCalculatorScreen.dart';
 
 // Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
 import 'NewStartPage.dart';
@@ -152,6 +155,34 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
             ),
           );
         }
+
+        else if (feature['page'] == '/food-map') { // NOU: Logica Food Map
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FoodMapScreen(),
+            ),
+          );
+        }
+
+        else if(feature['page'] == '/food-saver-game') { // NOU: Logica Jocului
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FoodSaverGameScreen(),
+            ),
+          );
+        }
+
+        else if (feature['page'] == '/analytics') { // NOU: Logica Analytics
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SavingsCalculatorScreen(), // Navighează la calculator
+            ),
+          );
+        }
+
         else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Navigare la ${feature['title']} (WIP)')),
@@ -160,6 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
       },
     );
   }
+
 
 
 
