@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:unihack_2025/DashboardScreen.dart';
 import 'NewStartPage.dart';
+import 'chatbot_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+
   runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");  // trebuie exact numele fișierului asta in main inainte de rurale a aplicatiei
 }
 
 class MyApp extends StatelessWidget {

@@ -139,7 +139,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const ChatBotScreen(),
+              builder: (context) =>  ChatBotPage(),
             ),
           );
         } else {
