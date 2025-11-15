@@ -1,6 +1,45 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+class GameScore {
+  String playerName;
+  int score;
+  double foodSaved;
+  int level;
+
+  GameScore({
+    required this.playerName,
+    required this.score,
+    required this.foodSaved,
+    required this.level,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": "GameScore",
+      "player_name": playerName,
+      "score": score,
+      "food_saved": foodSaved,
+      "level": level,
+    };
+  }
+
+  factory GameScore.fromJson(Map<String, dynamic> json) {
+    return GameScore(
+      playerName: json["player_name"] ?? "Player",
+      score: json["score"] ?? 0,
+      foodSaved: (json["food_saved"] ?? 0).toDouble(),
+      level: json["level"] ?? 1,
+    );
+  }
+
+  static String encode(GameScore score) => jsonEncode(score.toJson());
+  static GameScore decode(String jsonStr) => GameScore.fromJson(jsonDecode(jsonStr));
+}
 
 class FoodItem {
   final int id;
@@ -30,6 +69,8 @@ class _FoodSaverGameState extends State<FoodSaverGame>
   double foodSaved = 0;
   bool gameActive = false;
 
+  GameScore? bestScore;
+
   List<FoodItem> fallingItems = [];
   double playerPosition = 0.5;
 
@@ -52,8 +93,43 @@ class _FoodSaverGameState extends State<FoodSaverGame>
 
     moveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280), // smooth movement
+      duration: const Duration(milliseconds: 280),
     );
+
+    loadBestScore();
+  }
+
+  Future<String> _filePath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return '${dir.path}/best_score.json';
+  }
+
+  Future<void> loadBestScore() async {
+    try {
+      final path = await _filePath();
+      final file = File(path);
+      if (file.existsSync()) {
+        final content = await file.readAsString();
+        setState(() {
+          bestScore = GameScore.decode(content);
+        });
+      }
+    } catch (e) {
+      // ignore errors
+    }
+  }
+
+  Future<void> saveScore() async {
+    if (bestScore == null || score > bestScore!.score) {
+      bestScore = GameScore(
+          playerName: "Player",
+          score: score,
+          foodSaved: foodSaved,
+          level: level);
+      final path = await _filePath();
+      final file = File(path);
+      await file.writeAsString(GameScore.encode(bestScore!));
+    }
   }
 
   @override
@@ -92,6 +168,7 @@ class _FoodSaverGameState extends State<FoodSaverGame>
     setState(() => gameActive = false);
     spawnTimer?.cancel();
     gameTimer?.cancel();
+    saveScore();
   }
 
   void spawnFood() {
@@ -130,7 +207,6 @@ class _FoodSaverGameState extends State<FoodSaverGame>
     });
   }
 
-  // FIXED SMOOTH MOVEMENT — ALWAYS STARTS FROM CURRENT POSITION
   void animatePlayerTo(double newX) {
     moveAnimation = Tween<double>(
       begin: playerPosition,
@@ -184,6 +260,16 @@ class _FoodSaverGameState extends State<FoodSaverGame>
                 ],
               ),
             ),
+
+            // BEST SCORE DISPLAY
+            if (!gameActive && bestScore != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Best Score: ${bestScore!.score} (Level ${bestScore!.level}, ${bestScore!.foodSaved.toStringAsFixed(1)} kg)",
+                  style: const TextStyle(fontSize: 16, color: Colors.green),
+                ),
+              ),
 
             // GAME AREA
             Expanded(
