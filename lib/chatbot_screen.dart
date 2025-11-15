@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+// Astea trebe puse in main inainte de a rula ChatBotPage
+// WidgetsFlutterBinding.ensureInitialized();
+//   await dotenv.load(fileName: ".env");
+//   await Hive.initFlutter();
+//   await Hive.openBox('chatBox');
 
 class ChatBotPage extends StatefulWidget {
   @override
   _ChatBotPageState createState() => _ChatBotPageState();
 }
-
-
 
 class _ChatBotPageState extends State<ChatBotPage> {
   List<Map<String, String>> messages = [
@@ -20,6 +25,8 @@ class _ChatBotPageState extends State<ChatBotPage> {
   ];
   TextEditingController _controller = TextEditingController();
   bool isLoading = false;
+  ScrollController _scrollController = ScrollController();
+  late Box chatBox;
 
   final List<String> quickActions = [
     'How can I reduce food waste?',
@@ -28,30 +35,64 @@ class _ChatBotPageState extends State<ChatBotPage> {
     'Tips for meal planning'
   ];
 
-  ScrollController _scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    chatBox = Hive.box('chatBox');
+    loadMessages();
+  }
+
+  void loadMessages() {
+    final savedMessages = chatBox.values
+        .where((e) => e is Map) // filtrare doar Map
+        .map((e) => Map<String, String>.from(e))
+        .toList();
+
+    if (savedMessages.isNotEmpty) {
+      setState(() {
+        messages = savedMessages;
+      });
+    }
+  }
+
+  Future<void> saveMessage(String role, String content) async {
+    await chatBox.add({
+      'role': role,
+      'content': content,
+    });
+  }
 
   void scrollToBottom() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent + 100,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 100,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   Future<String> callGemeniAPI(String userMessage) async {
-    final apiKey =dotenv.env['GEMINI_API_KEY'] ?? '';
+    final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
     final payload = {
       "contents": [
         {
           "parts": [
-            {"text": "You are a helpful ReFood AI assistant.Rules:1. Only answer questions related to food waste, recipes, cooking, food storage, meal planning, or other food-related topics. Do not answer questions about unrelated topics.2. Provide practical and friendly advice.3. Respond in plain text only. Do NOT use Markdown, asterisks, dashes, or bullet points. Give text in simple sentences or numbered steps if needed.User question:$userMessage"}
+            {
+              "text":
+              "You are a helpful ReFood AI assistant. Rules: 1. Only answer questions related to food waste, recipes, cooking, food storage, meal planning, or other food-related topics. 2. Provide practical and friendly advice. 3. Respond in plain text only. Do NOT use Markdown, asterisks, dashes, or bullet points. User question: $userMessage"
+            }
           ]
         }
       ]
     };
 
+    print('--- Sending to Gemini API ---');
+    print(jsonEncode(payload));
 
     try {
       final response = await http.post(
@@ -63,25 +104,24 @@ class _ChatBotPageState extends State<ChatBotPage> {
         body: jsonEncode(payload),
       );
 
+      print('Status code: ${response.statusCode}');
+      print('--- Response from Gemini ---');
+      print(response.body);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-
-        final output = data['candidates'][0]['content']['parts'][0]['text'];
-
-
+        final output =
+            data['candidates'][0]['content']['parts'][0]['text'] ?? '';
         return output;
       } else {
-        print('Error from API: ${response.body}');
-        return 'I apologize, but I encountered an error: ${response
-            .statusCode}';
+        return 'I apologize, but I encountered an error: ${response.statusCode}';
       }
     } catch (e) {
       print('Exception during API call: $e');
       return 'I encountered an error.';
     }
   }
+
   void handleSend() async {
     String userMessage = _controller.text.trim();
     if (userMessage.isEmpty || isLoading) return;
@@ -91,6 +131,7 @@ class _ChatBotPageState extends State<ChatBotPage> {
       _controller.clear();
       isLoading = true;
     });
+    await saveMessage('user', userMessage);
 
     scrollToBottom();
 
@@ -100,6 +141,7 @@ class _ChatBotPageState extends State<ChatBotPage> {
       messages.add({'role': 'assistant', 'content': aiResponse});
       isLoading = false;
     });
+    await saveMessage('assistant', aiResponse);
 
     scrollToBottom();
   }

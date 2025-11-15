@@ -14,6 +14,16 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");  // trebuie exact numele fișierului asta in main inainte de rurale a aplicatiei
   await Hive.initFlutter();
   await Hive.openBox('donations');
+
+  var chatBox = await Hive.openBox('chatBox');
+  var donationsBox = await Hive.openBox('donations');
+
+  if (!chatBox.containsKey('initialized')) {
+    await chatBox.clear();
+    await donationsBox.clear();
+    await chatBox.put('__app_initialized__', true);
+  }
+
   runApp(const MyApp());
 }
 

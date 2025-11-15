@@ -42,6 +42,11 @@ dependencies:
   shared_preferences: ^2.2.3
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  geolocator: ^11.0.0
+
+
+    # Pentru a deschide aplicații de hărți externe (canLaunchUrl)
+  url_launcher: ^6.2.5
 
 
 
@@ -58,6 +63,15 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo.png"
 
 
 
