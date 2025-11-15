@@ -8,7 +8,7 @@ class AIService {
     // Simulează o întârziere și un răspuns de la un model LLM
     await Future.delayed(const Duration(seconds: 2));
 
-    // Logică simplă de răspuns (înlocuiește cu API-ul tău real)
+    // Logică simplă de  răspuns (înlocuiește cu API-ul tău real)
     if (prompt.toLowerCase().contains('hello') || prompt.toLowerCase().contains('salut')) {
       return 'Salut! Mă bucur că ești aici. Cum pot să te ajut să reduci risipa alimentară?';
     } else if (prompt.toLowerCase().contains('reduce food waste')) {
