@@ -4,6 +4,8 @@ import 'ImageDetectionPage.dart';
 import 'FoodMapScreen.dart';
 import 'FoodSaverGameScreen.dart';
 import 'SavingsCalculatorScreen.dart';
+import 'DonateFoodPage.dart';
+import 'RealTimeAnalyticsScreen.dart';
 
 // Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
 import 'NewStartPage.dart';
@@ -182,6 +184,16 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
             ),
           );
         }
+
+        else if (feature['page'] == '/donate-food') { // LOGICA FINALĂ DONATE FOOD
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DonateFoodPage(),
+            ),
+          );
+        }
+
 
         else {
           ScaffoldMessenger.of(context).showSnackBar(

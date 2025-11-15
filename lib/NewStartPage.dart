@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'DashboardScreen.dart'; // Asigură-te că DashboardScreen.dart este calea corectă
 import 'LearnMoreScreen.dart';
+import 'UserReviewsScreen.dart';
 import 'WasteReductionChartsScreen.dart';
 import 'SavingsCalculatorScreen.dart';
+import 'RealTimeAnalyticsScreen.dart';
 
 class NewStartPage extends StatefulWidget {
   const NewStartPage({super.key});
@@ -512,8 +514,27 @@ class _StatCardState extends State<StatCard> {
                 builder: (context) => const SavingsCalculatorScreen(),
               ),
             );
+          }
 
-          } else {
+          else if (widget.stat['label'] == 'Happy Users') { // NOU: Logica User Reviews
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserReviewsScreen(),
+              ),
+            );
+          }
+
+          else if (widget.stat['page'] == '/analytics') { // LOGICA FINALĂ ANALYTICS
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const RealTimeAnalyticsScreen(),
+              ),
+            );
+          }
+
+           else {
             // Logica pentru celelalte carduri rămâne ca simplu SnackBar
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Navigare la ${widget.stat['label']} (WIP)')),
@@ -693,11 +714,24 @@ class _FeatureCardState extends State<FeatureCard>
       onExit: (_) => _onHover(false),
       child: GestureDetector(
         onTap: isClickable ? () {
-          // Aici se poate adăuga logica de navigare pentru RealTimeAnalytics, SmartAutomation etc.
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Navigare la ${widget.feature['title']} (WIP)')),
-          );
+          final pagePath = widget.feature['page'];
+
+          if (pagePath == '/analytics') {
+            // LOGICA NOUĂ: Navigare la Real-Time Analytics
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const RealTimeAnalyticsScreen(),
+              ),
+            );
+          } else {
+            // Logica existentă (pentru Smart Automation etc.)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Navigare la ${widget.feature['title']} (WIP)')),
+            );
+          }
         } : null,
+
         child: AnimatedBuilder(
           animation: _inViewController,
           builder: (context, child) {
