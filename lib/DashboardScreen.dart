@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:lucide_icons/lucide_icons.dart'; // Folosim un pachet similar cu 'lucide-react'
-import 'chatbot_screen.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
-// Clasa de bază pentru widget-ul Dashboard
+// Importă celelalte pagini necesare (asigură-te că aceste căi sunt corecte)
+import 'NewStartPage.dart';
+import 'chatbot_screen.dart';
+// import 'TimisoaraMapScreen.dart'; // Dacă ai implementat harta
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -11,14 +13,18 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-//test2
-
-class _DashboardScreenState extends State<DashboardScreen>
-    with TickerProviderStateMixin {
-  // Controllere pentru animatii (simulând Framer Motion 'initial' și 'animate')
+class _DashboardScreenState extends State<DashboardScreen> with TickerProviderStateMixin {
+  // Animatie pentru Header (simuleaza initial/animate)
   late AnimationController _headerController;
-  final List<AnimationController> _featureControllers = [];
+  late Animation<Offset> _headerSlide;
+  late Animation<double> _headerOpacity;
+
+  // Animatie pentru Stats Section
   late AnimationController _statsController;
+  late Animation<double> _statsOpacity;
+
+  // Controllere pentru Feature Grid
+  final List<AnimationController> _featureControllers = [];
 
   final List<Map<String, dynamic>> features = const [
     {
@@ -71,87 +77,88 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   ];
 
+  final List<Map<String, dynamic>> _statData = const [
+    {'label': 'Food Saved', 'value': '0 kg', 'color': 'emerald'},
+    {'label': 'CO₂ Reduced', 'value': '0 kg', 'color': 'blue'},
+    {'label': 'Money Saved', 'value': '\$0', 'color': 'amber'}
+  ];
+
+
   @override
   void initState() {
     super.initState();
 
-    // 1. Header Animation (opacity: 0 -> 1, y: -20 -> 0)
-    _headerController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 800));
-    // Pentru a simula y translation, folosim un Tween
-    _headerController.forward();
+    // 1. Header Animation
+    _headerController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _headerSlide = Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero).animate(
+      CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
+    );
+    _headerOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(_headerController);
 
-    // 2. Feature Grid Animations (staggered delay)
+    // 2. Stats Section Animation
+    _statsController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _statsOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(_statsController);
+
+    // Declanșează animațiile principale
+    _headerController.forward();
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) _statsController.forward();
+    });
+
+    // Declanșează animațiile cardurilor cu delay
     for (int i = 0; i < features.length; i++) {
-      final controller = AnimationController(
-          vsync: this, duration: const Duration(milliseconds: 500));
+      final controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
       _featureControllers.add(controller);
       Future.delayed(Duration(milliseconds: 300 + i * 100), () {
         if (mounted) controller.forward();
       });
     }
-
-    // 3. Stats Section Animation (opacity, scale)
-    _statsController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) _statsController.forward();
-    });
   }
 
   @override
   void dispose() {
     _headerController.dispose();
+    _statsController.dispose();
     for (var controller in _featureControllers) {
       controller.dispose();
     }
-    _statsController.dispose();
     super.dispose();
   }
 
-  // Widgetul pentru o singură caracteristică (Card)
+  // Widget pentru un singur card de Feature
   Widget _buildFeatureCard(Map<String, dynamic> feature, int index) {
     final controller = _featureControllers[index];
-    final Animation<double> opacity = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
-    final Animation<Offset> slide = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeOut),
-    );
 
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        // Simulează initial: opacity: 0, y: 20
-        return FadeTransition(
-          opacity: opacity,
-          child: SlideTransition(
-            position: slide,
-            child: FeatureCardContent(
-              feature: feature,
-              colorStart: feature['colorStart'],
-              colorEnd: feature['colorEnd'],
-              icon: feature['icon'],
+    return FeatureCardAnimated(
+      feature: feature,
+      index: index,
+      controller: controller,
+      // Navigare din Dashboard la paginile specifice
+      onTap: () {
+        if (feature['page'] == '/chat-bot') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ChatBotScreen(),
             ),
-          ),
-        );
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Navigare la ${feature['title']} (WIP)')),
+          );
+        }
       },
     );
   }
 
-  // Widgetul pentru statistici
+  // Widget pentru o singură statistică
   Widget _buildStatCard(Map<String, dynamic> stat, int index) {
     final Color color;
     switch (stat['color']) {
-      case 'emerald':
-        color = Colors.green.shade600;
-        break;
-      case 'blue':
-        color = Colors.blue.shade600;
-        break;
-      case 'amber':
-        color = Colors.amber.shade600;
-        break;
-      default:
-        color = Colors.grey;
+      case 'emerald': color = Colors.green.shade600; break;
+      case 'blue': color = Colors.blue.shade600; break;
+      case 'amber': color = Colors.amber.shade600; break;
+      default: color = Colors.grey;
     }
 
     // Simulează scale și delay
@@ -169,9 +176,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     return ScaleTransition(
       scale: scale,
       child: FadeTransition(
-        opacity: _statsController,
+        opacity: _statsOpacity,
         child: Card(
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.white.withOpacity(0.8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
           child: Padding(
@@ -192,6 +199,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 4),
                 Text(
                   stat['label'] as String,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.blueGrey.shade600,
                       fontWeight: FontWeight.w500),
@@ -206,24 +214,18 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Definirea gradientului de fundal
+    // Definirea gradientului de fundal (from-slate-50 via-white to-emerald-50)
     final backgroundGradient = BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Colors.grey.shade50, // from-slate-50
-          Colors.white, // via-white
-          Colors.green.shade50, // to-emerald-50
+          Colors.grey.shade50,
+          Colors.white,
+          Colors.green.shade50,
         ],
       ),
     );
-
-    // Animarea Header-ului
-    final headerSlide = Tween<Offset>(begin: const Offset(0, -0.05), end: Offset.zero).animate(
-      CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
-    );
-    final headerOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(_headerController);
 
     return Scaffold(
       body: Container(
@@ -236,13 +238,36 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // --------------------------
-                  // HEADER (AnimatedOpacity + SlideTransition)
-                  // --------------------------
+                  // NOU: Butonul "Back to Home"
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        // Navigare înapoi la noul ecran de pornire
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NewStartPage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(LucideIcons.home, size: 20),
+                      label: const Text(
+                        "Back to Home",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.blueGrey.shade700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // HEADER (Simulează motion.div initial/animate)
                   FadeTransition(
-                    opacity: headerOpacity,
+                    opacity: _headerOpacity,
                     child: SlideTransition(
-                      position: headerSlide,
+                      position: _headerSlide,
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 48),
                         child: Column(
@@ -277,11 +302,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blueGrey.shade900,
                                 height: 1.2,
-                                shadows: [
-                                  Shadow(
-                                      blurRadius: 10,
-                                      color: Colors.black.withOpacity(0.1))
-                                ],
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -299,37 +319,45 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                   ),
 
-                  // --------------------------
                   // FEATURE GRID
-                  // --------------------------
-                  StaggeredGrid.count(
-                    crossAxisCount: MediaQuery.of(context).size.width > 900 ? 3 : 2, // 3 coloane pe desktop, 2 pe mobil
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    children: List.generate(
-                      features.length,
-                          (index) => _buildFeatureCard(features[index], index),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).size.width > 900 ? 3 : 2,
+                      childAspectRatio: 1.0,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
                     ),
+                    itemCount: features.length,
+                    itemBuilder: (context, index) {
+                      return _buildFeatureCard(features[index], index);
+                    },
                   ),
 
-                  // --------------------------
-                  // STATS SECTION
-                  // --------------------------
-                  Padding(
-                    padding: const EdgeInsets.only(top: 64),
-                    child: StaggeredGrid.count(
-                      crossAxisCount: MediaQuery.of(context).size.width > 900 ? 3 : 1, // 3 coloane pe desktop, 1 pe mobil
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      children: [
-                        {'label': 'Food Saved', 'value': '0 kg', 'color': 'emerald'},
-                        {'label': 'CO₂ Reduced', 'value': '0 kg', 'color': 'blue'},
-                        {'label': 'Money Saved', 'value': '\$0', 'color': 'amber'},
-                      ].map((stat) => _buildStatCard(stat, [
-                        {'label': 'Food Saved', 'value': '0 kg', 'color': 'emerald'},
-                        {'label': 'CO₂ Reduced', 'value': '0 kg', 'color': 'blue'},
-                        {'label': 'Money Saved', 'value': '\$0', 'color': 'amber'},
-                      ].indexOf(stat))).toList(),
+                  // STATS SECTION (Simulează motion.div initial/animate)
+                  FadeTransition(
+                    opacity: _statsOpacity,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 64),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: constraints.maxWidth > 768 ? 3 : 1,
+                              childAspectRatio: constraints.maxWidth > 768 ? 2.5 : 4.5,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                            itemCount: _statData.length,
+                            itemBuilder: (context, index) {
+                              return _buildStatCard(_statData[index], index);
+                            },
+                          );
+                        },
+                      ),
                     ),
                   )
                 ],
@@ -342,118 +370,130 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 }
 
-// Widgetul separat pentru conținutul cardului (pentru a gestiona Hover/Tap)
-class FeatureCardContent extends StatefulWidget {
-  final Map<String, dynamic> feature;
-  final Color colorStart;
-  final Color colorEnd;
-  final IconData icon;
+// ===================================
+// WIDGETS AUXILIARE
+// ===================================
 
-  const FeatureCardContent({
+// Wrapper pentru Feature Card, gestionând animațiile de intrare și hover
+class FeatureCardAnimated extends StatefulWidget {
+  final Map<String, dynamic> feature;
+  final int index;
+  final AnimationController controller;
+  final VoidCallback onTap;
+
+  const FeatureCardAnimated({
     super.key,
     required this.feature,
-    required this.colorStart,
-    required this.colorEnd,
-    required this.icon,
+    required this.index,
+    required this.controller,
+    required this.onTap,
   });
 
   @override
-  State<FeatureCardContent> createState() => _FeatureCardContentState();
+  State<FeatureCardAnimated> createState() => _FeatureCardAnimatedState();
 }
 
-class _FeatureCardContentState extends State<FeatureCardContent>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _hoverController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _yOffsetAnimation;
+class _FeatureCardAnimatedState extends State<FeatureCardAnimated> with SingleTickerProviderStateMixin {
+  // Animații pentru hover
+  double _scale = 1.0;
+  double _yOffset = 0.0;
+  late AnimationController _iconController;
 
   @override
   void initState() {
     super.initState();
-    // Simulează whileHover={{ y: -8, scale: 1.02 }} și whileTap={{ scale: 0.98 }}
-    _hoverController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
-
-    _scaleAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.02), weight: 1),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.02, end: 1.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _hoverController, curve: Curves.easeOut));
-
-    _yOffsetAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: -8.0), weight: 1),
-      TweenSequenceItem(tween: Tween<double>(begin: -8.0, end: 0.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _hoverController, curve: Curves.easeOut));
+    // Animație pentru rotirea iconiței la hover
+    _iconController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
   }
 
   @override
   void dispose() {
-    _hoverController.dispose();
+    _iconController.dispose();
     super.dispose();
   }
 
   void _onHover(bool isHovering) {
+    setState(() {
+      // Simulează whileHover={{ y: -8, scale: 1.02 }}
+      _scale = isHovering ? 1.02 : 1.0;
+      _yOffset = isHovering ? -8 : 0;
+    });
+
+    // Rotația iconiței la hover
     if (isHovering) {
-      _hoverController.forward();
+      _iconController.repeat(min: 0.0, max: 1.0, reverse: true);
     } else {
-      _hoverController.reverse();
+      _iconController.reset();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Gradient pentru textul "Get Started"
-    final textGradient = LinearGradient(
-      colors: [widget.colorStart, widget.colorEnd],
+    final Animation<double> opacity = Tween<double>(begin: 0.0, end: 1.0).animate(widget.controller);
+    final Animation<Offset> slide = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+      CurvedAnimation(parent: widget.controller, curve: Curves.easeOut),
     );
-
-    // Gestionează animațiile de hover/tap
-    return MouseRegion(
-      onEnter: (_) => _onHover(true),
-      onExit: (_) => _onHover(false),
-      child: GestureDetector(
-        onTapDown: (_) => _hoverController.animateTo(0.5, curve: Curves.easeOut), // Simulează whileTap
-        onTapUp: (_) => _hoverController.reverse(),
-        onTapCancel: () => _hoverController.reverse(),
-        onTap: ()
-        {
-
-          if (widget.feature['page'] == '/chat-bot') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatBotScreen(), // Navighează la noul ecran
-              ),
-            );
-          }
+    final textGradient = LinearGradient(colors: [widget.feature['colorStart'], widget.feature['colorEnd']]);
 
 
-          // Navigare (similar cu Link to={createPageUrl(feature.page)})
-          // Navigator.pushNamed(context, widget.feature['page']);
-        },
-        child: AnimatedBuilder(
-          animation: _hoverController,
-          builder: (context, child) {
-            return Transform.translate(
-              offset: Offset(0, _yOffsetAnimation.value),
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Card(
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, child) {
+        return MouseRegion(
+          onEnter: (_) => _onHover(true),
+          onExit: (_) => _onHover(false),
+          child: GestureDetector(
+            onTap: widget.onTap,
+            child: FadeTransition(
+              opacity: opacity,
+              child: SlideTransition(
+                position: slide,
+                child: AnimatedScale(
+                  scale: _scale,
+                  duration: const Duration(milliseconds: 300),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    transform: Matrix4.translationValues(0, _yOffset, 0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: Colors.blueGrey.shade200)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
+                      border: Border.all(color: Colors.blueGrey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1 + (_yOffset.abs() / 160)),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Icon Container (cu animație de rotație la hover)
-                        IconWithRotation(
-                          colorStart: widget.colorStart,
-                          colorEnd: widget.colorEnd,
-                          icon: widget.icon,
-                          isHovered: _hoverController.isAnimating || _hoverController.value > 0, // Daca e in starea de hover
+                        RotationTransition(
+                          turns: Tween<double>(begin: 0, end: 0.1).animate(_iconController),
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: LinearGradient(
+                                colors: [widget.feature['colorStart'], widget.feature['colorEnd']],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: widget.feature['colorEnd'].withOpacity(0.4),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                )
+                              ],
+                            ),
+                            child: Icon(widget.feature['icon'] as IconData, color: Colors.white, size: 40),
+                          ),
                         ),
                         const SizedBox(height: 24),
 
@@ -467,21 +507,21 @@ class _FeatureCardContentState extends State<FeatureCardContent>
                             color: Colors.blueGrey.shade900,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
                         // Description
                         Text(
                           widget.feature['description'] as String,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.blueGrey.shade600),
+                          style: TextStyle(color: Colors.blueGrey.shade600, height: 1.4),
                         ),
 
                         // Hover Indicator
                         AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: _hoverController.value > 0.01 ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 300),
+                          opacity: _scale > 1.0 ? 1.0 : 0.0,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 24.0),
+                            padding: const EdgeInsets.only(top: 16.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -496,10 +536,7 @@ class _FeatureCardContentState extends State<FeatureCardContent>
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                ArrowAnimation(
-                                  colorStart: widget.colorStart,
-                                  colorEnd: widget.colorEnd,
-                                ),
+                                AnimatedArrow(colorStart: widget.feature['colorStart'], colorEnd: widget.feature['colorEnd']),
                               ],
                             ),
                           ),
@@ -509,100 +546,6 @@ class _FeatureCardContentState extends State<FeatureCardContent>
                   ),
                 ),
               ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-// Widget separat pentru Icon (gestionează rotația)
-class IconWithRotation extends StatefulWidget {
-  final Color colorStart;
-  final Color colorEnd;
-  final IconData icon;
-  final bool isHovered;
-
-  const IconWithRotation({
-    super.key,
-    required this.colorStart,
-    required this.colorEnd,
-    required this.icon,
-    required this.isHovered,
-  });
-
-  @override
-  State<IconWithRotation> createState() => _IconWithRotationState();
-}
-
-class _IconWithRotationState extends State<IconWithRotation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _iconController;
-  late Animation<double> _rotationAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    // Simulează whileHover={{ rotate: [0, -10, 10, 0] }}
-    _iconController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500));
-
-    // Rotație ușoară
-    _rotationAnimation = Tween<double>(begin: 0, end: 0.1).animate(
-      CurvedAnimation(parent: _iconController, curve: Curves.easeInOut),
-    );
-    // Simulează group-hover:scale-110
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _iconController, curve: Curves.easeOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _iconController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant IconWithRotation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isHovered && oldWidget.isHovered == false) {
-      _iconController.forward(from: 0.0);
-    } else if (!widget.isHovered && oldWidget.isHovered == true) {
-      _iconController.reverse();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _iconController,
-      builder: (context, child) {
-        return Transform.rotate(
-          angle: _rotationAnimation.value,
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  colors: [widget.colorStart, widget.colorEnd],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.colorEnd.withOpacity(0.4),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  )
-                ],
-              ),
-              child: Icon(widget.icon, color: Colors.white, size: 40),
             ),
           ),
         );
@@ -611,46 +554,43 @@ class _IconWithRotationState extends State<IconWithRotation>
   }
 }
 
-// Widget separat pentru săgeata animată
-class ArrowAnimation extends StatefulWidget {
+// Săgeată animată (similară cu codul tău anterior)
+class AnimatedArrow extends StatefulWidget {
   final Color colorStart;
   final Color colorEnd;
 
-  const ArrowAnimation({super.key, required this.colorStart, required this.colorEnd});
+  const AnimatedArrow({super.key, required this.colorStart, required this.colorEnd});
 
   @override
-  State<ArrowAnimation> createState() => _ArrowAnimationState();
+  State<AnimatedArrow> createState() => _AnimatedArrowState();
 }
 
-class _ArrowAnimationState extends State<ArrowAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _arrowController;
+class _AnimatedArrowState extends State<AnimatedArrow> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
   late Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Simulează animate={{ x: [0, 5, 0] }} transition={{ duration: 1, repeat: Infinity }}
-    _arrowController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000))
-      ..repeat();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))
+      ..repeat(reverse: false);
 
     _slideAnimation = TweenSequence([
       TweenSequenceItem(tween: Tween<double>(begin: 0, end: 5), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: 5, end: 0), weight: 1),
-    ]).animate(_arrowController);
+    ]).animate(_controller);
   }
 
   @override
   void dispose() {
-    _arrowController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _arrowController,
+      animation: _controller,
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(_slideAnimation.value, 0),
@@ -660,10 +600,7 @@ class _ArrowAnimationState extends State<ArrowAnimation>
             ).createShader(bounds),
             child: const Text(
               "→",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
         );
