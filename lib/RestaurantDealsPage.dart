@@ -217,11 +217,13 @@ out center 40;
       'https://plus.unsplash.com/premium_photo-1695658864487-a5a9882c3626?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVlcnxlbnwwfHwwfHx8MA%3D%3D',
       'heineken':
       'https://images.unsplash.com/photo-1541542684-4e5b6e8b21f2?w=900&h=600&fit=crop',
+      'auchan':
+          'https://images.unsplash.com/photo-1628102491629-778571d893a3?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     };
 
     // ── Category image pools (pizza, burger, cafe, etc.) ──
     const pizzaImages = [
-      'https://images.unsplash.com/photo-1548365328-9daaf8eca8ac?w=900&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       'https://images.unsplash.com/photo-1601924582970-9238bcb495d9?w=900&h=600&fit=crop',
       'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&h=600&fit=crop',
     ];
@@ -231,6 +233,7 @@ out center 40;
       'https://images.unsplash.com/photo-1550317138-10000687a72b?w=900&h=600&fit=crop',
       'https://images.unsplash.com/photo-1508737027454-e6454ef45afd?w=900&h=600&fit=crop',
     ];
+
 
     const asianImages = [
       'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&h=600&fit=crop',
@@ -261,9 +264,9 @@ out center 40;
     ];
 
     const produceImages = [
-      'https://images.unsplash.com/photo-1511688878353-3a2f5be94cd7?w=900&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1524593567613-3cfd152506ac?w=900&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=900&h=600&fit=crop',
+      'https://media.istockphoto.com/id/1524835742/photo/raw-fruits-and-vegetables-vegan-food-on-monochrome-green-table-full-frame.webp?a=1&b=1&s=612x612&w=0&k=20&c=Xo5ErdXfL2e_wFFjbM9Y4N5-9RfE0WHyelrrXG-yMYo=',
+      'https://images.unsplash.com/photo-1638024912888-ac77d663c72f?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'https://images.unsplash.com/photo-1587003759437-353be667e98b?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     ];
 
     const beerImages = [
@@ -276,7 +279,8 @@ out center 40;
       'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=900&h=600&fit=crop',
       'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900&h=600&fit=crop',
       'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=900&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1604908176997-125188ad53aa?w=900&h=600&fit=crop',
+      'https://plus.unsplash.com/premium_photo-1670740967011-86730910a2e5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cmVzdGF1cmFudCUyMGZvb2R8ZW58MHx8MHx8fDA%3D',
+      'https://images.unsplash.com/photo-1556040220-4096d522378d?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     ];
 
     List<RestaurantDeal> loaded = [];
