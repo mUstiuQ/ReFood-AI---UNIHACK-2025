@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:unihack_2025/RestaurantDealsPage.dart';
 import 'ImageDetectionPage.dart';
 import 'FoodMapScreen.dart';
 import 'FoodSaverGameScreen.dart';
@@ -171,7 +172,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const FoodSaverGameScreen(),
+              builder: (context) => const FoodSaverGame(),
             ),
           );
         }
@@ -181,6 +182,15 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
             context,
             MaterialPageRoute(
               builder: (context) => const SavingsCalculatorScreen(), // Navighează la calculator
+            ),
+          );
+        }
+
+        else if (feature['page'] == '/restaurant-deals') { // NOU: Logica Analytics
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const RestaurantDealsPage(), // Navighează la calculator
             ),
           );
         }

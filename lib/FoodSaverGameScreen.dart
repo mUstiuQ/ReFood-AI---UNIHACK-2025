@@ -1,10 +1,48 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'DashboardScreen.dart'; // Navigare înapoi la Dashboard
+import 'package:path_provider/path_provider.dart';
+import 'DashboardScreen.dart';
 
-// Clasa de date pentru obiectele care cad
+class GameScore {
+  String playerName;
+  int score;
+  double foodSaved;
+  int level;
+
+  GameScore({
+    required this.playerName,
+    required this.score,
+    required this.foodSaved,
+    required this.level,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": "GameScore",
+      "player_name": playerName,
+      "score": score,
+      "food_saved": foodSaved,
+      "level": level,
+    };
+  }
+
+  factory GameScore.fromJson(Map<String, dynamic> json) {
+    return GameScore(
+      playerName: json["player_name"] ?? "Player",
+      score: json["score"] ?? 0,
+      foodSaved: (json["food_saved"] ?? 0).toDouble(),
+      level: json["level"] ?? 1,
+    );
+  }
+
+  static String encode(GameScore score) => jsonEncode(score.toJson());
+  static GameScore decode(String jsonStr) =>
+      GameScore.fromJson(jsonDecode(jsonStr));
+}
+
 class FoodItem {
   final int id;
   double x;
@@ -19,26 +57,26 @@ class FoodItem {
   });
 }
 
-class FoodSaverGameScreen extends StatefulWidget {
-  const FoodSaverGameScreen({super.key});
+class FoodSaverGame extends StatefulWidget {
+  const FoodSaverGame({super.key});
 
   @override
-  _FoodSaverGameScreenState createState() => _FoodSaverGameScreenState();
+  _FoodSaverGameState createState() => _FoodSaverGameState();
 }
 
-class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
+class _FoodSaverGameState extends State<FoodSaverGame>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int level = 1;
-  double foodSaved = 0; // kg
+  double foodSaved = 0;
+
+  int lives = 3; // ❤️ număr de vieți
   bool gameActive = false;
 
-  // Am eliminat logica GameScore și persistența fișierelor (dart:io / path_provider)
-  // pentru compatibilitate maximă și rulare imediată.
+  GameScore? bestScore;
 
-  // Datele jocului
   List<FoodItem> fallingItems = [];
-  double playerPosition = 0.5; // Poziție orizontală între 0.0 și 1.0
+  double playerPosition = 0.5;
 
   Timer? spawnTimer;
   Timer? gameTimer;
@@ -46,13 +84,11 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
   late AnimationController moveController;
   late Animation<double> moveAnimation;
 
-  final List<IconData> foodIcons = const [
-    LucideIcons.apple,
-    LucideIcons.cookie,
-    LucideIcons.pizza,
-    LucideIcons.milk,
-    LucideIcons.carrot,
-    LucideIcons.egg,
+  final List<IconData> foodIcons = [
+    Icons.apple,
+    Icons.cookie,
+    Icons.local_pizza,
+    Icons.icecream,
   ];
 
   @override
@@ -61,8 +97,44 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
 
     moveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 280),
     );
+
+    loadBestScore();
+  }
+
+  Future<String> _filePath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return '${dir.path}/best_score.json';
+  }
+
+  Future<void> loadBestScore() async {
+    try {
+      final path = await _filePath();
+      final file = File(path);
+      if (file.existsSync()) {
+        final content = await file.readAsString();
+        setState(() {
+          bestScore = GameScore.decode(content);
+        });
+      }
+    } catch (e) {
+      // ignore errors
+    }
+  }
+
+  Future<void> saveScore() async {
+    if (bestScore == null || score > bestScore!.score) {
+      bestScore = GameScore(
+        playerName: "Player",
+        score: score,
+        foodSaved: foodSaved,
+        level: level,
+      );
+      final path = await _filePath();
+      final file = File(path);
+      await file.writeAsString(GameScore.encode(bestScore!));
+    }
   }
 
   @override
@@ -78,6 +150,7 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
       score = 0;
       level = 1;
       foodSaved = 0;
+      lives = 3; // reset vieți
       fallingItems.clear();
       playerPosition = 0.5;
       gameActive = true;
@@ -86,25 +159,47 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
     spawnTimer?.cancel();
     gameTimer?.cancel();
 
-    // Rata de apariție scade cu nivelul (max 1500ms, min 350ms)
     spawnTimer = Timer.periodic(
-      Duration(milliseconds: max(350, 1500 - level * 100)),
+      Duration(milliseconds: max(350, 1500 - level * 120)),
           (_) => spawnFood(),
     );
 
-    // Rata de refresh a jocului
     gameTimer = Timer.periodic(
       const Duration(milliseconds: 40),
           (_) => updateGame(),
     );
   }
 
-  void endGame() {
+  void endGame({bool gameOver = false}) {
     setState(() => gameActive = false);
     spawnTimer?.cancel();
     gameTimer?.cancel();
-    // Nu apelăm saveScore()
-    _showGameOverDialog();
+    saveScore();
+
+    if (gameOver) {
+      // Afișăm un dialog "Game Over"
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Game Over"),
+              content: Text(
+                  "You missed too many foods!\n\nScore: $score\nLevel: $level\nFood saved: ${foodSaved.toStringAsFixed(1)} kg"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // închide dialogul
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      });
+    }
   }
 
   void spawnFood() {
@@ -113,7 +208,7 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
       fallingItems.add(
         FoodItem(
           id: DateTime.now().millisecondsSinceEpoch,
-          x: rand.nextDouble().clamp(0.1, 0.9), // Evită marginile extreme
+          x: rand.nextDouble(),
           y: 0,
           icon: foodIcons[rand.nextInt(foodIcons.length)],
         ),
@@ -122,37 +217,43 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
   }
 
   void updateGame() {
+    if (!gameActive) return;
+
+    bool shouldGameOver = false;
+
     setState(() {
       List<FoodItem> updated = [];
-      bool missedFood = false;
 
       for (var item in fallingItems) {
-        // Viteza crește cu nivelul
         item.y += 0.02 + level * 0.005;
 
-        // Verifică capturarea
-        bool caught = (item.x - playerPosition).abs() < 0.1 && item.y > 0.88;
+        bool caught =
+            (item.x - playerPosition).abs() < 0.08 && item.y > 0.85;
 
         if (caught) {
           score += 10;
-          foodSaved += 0.1;
-          // Crește nivelul
+          foodSaved += 0.5;
           if (score % 100 == 0) level += 1;
-        } else if (item.y < 1.0) { // Cât timp este în ecran
-          updated.add(item);
         } else if (item.y >= 1.0) {
-          // Dacă rata de cădere depășește limita, jocul se termină
-          missedFood = true;
+          // A CĂZUT JOS NEPRINS → pierzi o viață
+          lives -= 1;
+          if (lives <= 0) {
+            shouldGameOver = true;
+          }
+        } else if (item.y < 1.2) {
+          updated.add(item);
         }
       }
 
       fallingItems = updated;
-      if (missedFood) endGame();
     });
+
+    if (shouldGameOver) {
+      endGame(gameOver: true);
+    }
   }
 
   void animatePlayerTo(double newX) {
-    // Animația de mișcare bazată pe controler
     moveAnimation = Tween<double>(
       begin: playerPosition,
       end: newX,
@@ -171,235 +272,160 @@ class _FoodSaverGameScreenState extends State<FoodSaverGameScreen>
   }
 
   void movePlayerLeft() {
-    animatePlayerTo((playerPosition - 0.1).clamp(0.0, 1.0));
+    animatePlayerTo((playerPosition - 0.06).clamp(0.0, 1.0));
   }
 
   void movePlayerRight() {
-    animatePlayerTo((playerPosition + 0.1).clamp(0.0, 1.0));
+    animatePlayerTo((playerPosition + 0.06).clamp(0.0, 1.0));
   }
-
-  void _showGameOverDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Game Over!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Scorul tău final: $score', style: const TextStyle(fontSize: 18)),
-              Text('Nivel atins: $level', style: const TextStyle(fontSize: 18)),
-              Text('Mâncare salvată: ${foodSaved.toStringAsFixed(1)} kg', style: const TextStyle(fontSize: 18, color: Colors.green)),
-              const SizedBox(height: 16),
-              const Text('Mâncarea a căzut pe jos! Încearcă din nou!', style: TextStyle(color: Colors.blueGrey)),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Începe un joc nou'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                startGame();
-              },
-            ),
-            TextButton(
-              child: const Text('Mergi la Dashboard'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pop(context); // Închide jocul și merge înapoi la Dashboard
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {
-    // Ne asigurăm că lățimea și înălțimea sunt calculate corect în funcție de padding-uri
     final screenW = MediaQuery.of(context).size.width;
-    final screenH = MediaQuery.of(context).size.height - 120; // Aproximăm zona de joc
+    final screenH = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // HEADER
-            _buildGameHeader(context),
+            // HEADER + Back Button
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 🔙 Back to Dashboard
+                  IconButton(
+                    icon:
+                    const Icon(Icons.arrow_back, size: 28, color: Colors.black87),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
-            // BEST SCORE DISPLAY (Simplificat)
-            // Lăsăm intenționat gol, deoarece persistența locală nu este disponibilă
+                  Text("Score: $score",
+                      style: const TextStyle(fontSize: 18)),
+                  Text("Level: $level",
+                      style: const TextStyle(fontSize: 18)),
+
+                  // Vieți rămase
+                  Row(
+                    children: List.generate(
+                      3,
+                          (index) => Icon(
+                        Icons.favorite,
+                        size: 20,
+                        color: index < lives ? Colors.red : Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                  Text("${foodSaved.toStringAsFixed(1)} kg",
+                      style: const TextStyle(fontSize: 18)),
+
+                  if (gameActive)
+                    ElevatedButton(
+                      onPressed: () => endGame(gameOver: false),
+                      child: const Text("End"),
+                    ),
+                ],
+              ),
+            ),
+
+            // BEST SCORE DISPLAY
+            if (!gameActive && bestScore != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Best Score: ${bestScore!.score} "
+                      "(Level ${bestScore!.level}, "
+                      "${bestScore!.foodSaved.toStringAsFixed(1)} kg)",
+                  style: const TextStyle(fontSize: 16, color: Colors.green),
+                ),
+              ),
 
             // GAME AREA
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  border: Border(bottom: BorderSide(color: Colors.green.shade700, width: 4)),
-                ),
-                child: Stack(
-                  children: [
-                    // FALLING FOOD
-                    ...fallingItems.map((item) {
-                      return Positioned(
-                        top: item.y * screenH,
-                        left: item.x * (screenW - 40),
-                        child: Icon(
-                          item.icon,
-                          size: 40,
-                          color: item.icon == LucideIcons.cookie || item.icon == LucideIcons.milk
-                              ? Colors.brown.shade400
-                              : Colors.green.shade700,
-                        ),
-                      );
-                    }).toList(),
-
-                    // PLAYER — SMOOTH POSITION
-                    Positioned(
-                      bottom: 40,
-                      left: playerPosition * (screenW - 80),
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10)
-                          ],
-                          gradient: LinearGradient(
-                            colors: [Colors.teal.shade600, Colors.green.shade600],
-                          ),
-                        ),
-                        child: const Icon(LucideIcons.shoppingCart,
-                            color: Colors.white, size: 40),
+              child: Stack(
+                children: [
+                  // FALLING FOOD
+                  ...fallingItems.map((item) {
+                    return Positioned(
+                      top: item.y * (screenH - 220),
+                      left: item.x * (screenW - 40),
+                      child: Icon(
+                        item.icon,
+                        size: 40,
+                        color: Colors.orange,
                       ),
+                    );
+                  }).toList(),
+
+                  // PLAYER
+                  Positioned(
+                    bottom: 40,
+                    left: playerPosition * (screenW - 80),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Colors.teal, Colors.green],
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.star,
+                        color: Colors.white,
+                        size: 45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // CONTROL BUTTONS
+            if (gameActive)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: movePlayerLeft,
+                      child: const Icon(Icons.arrow_left),
+                    ),
+                    ElevatedButton(
+                      onPressed: movePlayerRight,
+                      child: const Icon(Icons.arrow_right),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            // CONTROL BUTTONS ȘI CTA
-            if (gameActive)
-              _buildControlButtons()
-            else
-              _buildStartButton(context),
+            if (!gameActive)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: ElevatedButton(
+                  onPressed: startGame,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 16),
+                  ),
+                  child: const Text(
+                    "Start Game",
+                    style: TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGameHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.blueGrey.shade200)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(LucideIcons.arrowLeft),
-            onPressed: () {
-              endGame();
-              Navigator.pop(context);
-            },
-            color: Colors.blueGrey.shade700,
-          ),
-
-          _buildStatDisplay('Score', score.toString()),
-          _buildStatDisplay('Level', level.toString()),
-          _buildStatDisplay('Saved', '${foodSaved.toStringAsFixed(1)} kg', color: Colors.green.shade600),
-
-          if (gameActive)
-            ElevatedButton(
-              onPressed: endGame,
-              child: const Text("END", style: TextStyle(fontSize: 16)),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade400,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatDisplay(String title, String value, {Color? color}) {
-    return Column(
-      children: [
-        Text(title, style: TextStyle(fontSize: 14, color: Colors.blueGrey.shade600)),
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color ?? Colors.blueGrey.shade900)),
-      ],
-    );
-  }
-
-  Widget _buildControlButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildControlButton(LucideIcons.arrowLeft, movePlayerLeft),
-          _buildControlButton(LucideIcons.arrowRight, movePlayerRight),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControlButton(IconData icon, VoidCallback onPressed) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        shape: const CircleBorder(),
-        padding: const EdgeInsets.all(20),
-        backgroundColor: Colors.blueGrey.shade700,
-        foregroundColor: Colors.white,
-        elevation: 8,
-      ),
-      child: Icon(icon, size: 30),
-    );
-  }
-
-  Widget _buildStartButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-      child: Column(
-        children: [
-          // Am lăsat Best Score gol momentan, deoarece nu avem persistență
-          const Text(
-            "Welcome to Food Saver Game!",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.teal),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            "Use the basket to catch food before it hits the floor. Don't let anything go to waste!",
-            style: TextStyle(fontSize: 16, color: Colors.blueGrey),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: startGame,
-            icon: const Icon(LucideIcons.play, size: 24),
-            label: const Text("Start Game", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              backgroundColor: Colors.green.shade600,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 10,
-            ),
-          ),
-        ],
       ),
     );
   }

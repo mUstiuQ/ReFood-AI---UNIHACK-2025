@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:typed_data'; // Necesar pentru Uint8List
@@ -21,7 +22,7 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
   String? _analysis;
 
   // ATENȚIE: Cheia API este hardcodată, înlocuiește-o cu cheia ta reală!
-  static const String _apiKey = 'AIzaSyBEU3k_LbMxtl7I4LlVxOd5YF-29kfEWLc';
+  static final String _apiKey = dotenv.env['IMAGINE_API_KEY'] ?? '';
 
   Future<void> _pickImage(ImageSource source) async {
     // Folosim pickImage din picker
