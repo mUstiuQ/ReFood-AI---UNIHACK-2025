@@ -1,5 +1,11 @@
 # ReFood AI: The Smart Kitchen Assistant
 ### TASTE IT! DON'T WASTE IT!
+![.](https://github.com/mUstiuQ/ReFood-AI---UNIHACK-2025/blob/main/LOGO_APP.png)
+
+![](https://img.shields.io/badge/Dart-8A2BE2) ![](https://img.shields.io/badge/C++-FFDD33) ![](https://img.shields.io/badge/CMake-F1) ![](https://img.shields.io/badge/Swift-335BFF)  ![](https://img.shields.io/badge/Flutter-FF3393) 
+![](https://img.shields.io/badge/AndroidStudio-FF3333)  
+![.](https://img.shields.io/badge/C-884DA7)
+![](https://img.shields.io/badge/Multi%20language-335BFF) ![](https://img.shields.io/badge/C-B833FF)
 
 Ending food waste through Artificial Intelligence, Gamification, and Community Donation.
 💡 Project Overview
