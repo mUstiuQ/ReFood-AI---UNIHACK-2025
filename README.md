@@ -1,214 +1,153 @@
- ReFood AI: The Smart Kitchen Assistant
+# ReFood AI: The Smart Kitchen Assistant
+### TASTE IT! DON'T WASTE IT!
 
 Ending food waste through Artificial Intelligence, Gamification, and Community Donation.
+💡 Project Overview
 
- Project Overview
+ReFood AI is a fully responsive, cross-platform application (Web, Android, Windows) developed at UniHack 2025 to tackle the global crisis of food waste.
+Using Gemini Vision AI, real-time analytics, and a community-driven approach, ReFood AI transforms how households manage, consume, and donate surplus food — turning environmental responsibility into economic savings and meaningful social impact.
 
-ReFood AI is a fully responsive, cross-platform application (Web, Android, iOS) developed at UniHack 2025 to tackle the global crisis of food waste. We integrate advanced Gemini Vision AI and intelligent analytics to transform how households manage, consume, and donate surplus food, turning environmental responsibility into economic savings and a fun, community-driven activity.
+❗ The Problem We Solve
 
-The Problem We Solve
+Globally:
 
-Globally, one-third of all food is wasted, resulting in massive economic loss (trillions of dollars annually) and contributing 8–10% of global greenhouse gas emissions. Households lack the tools to accurately track freshness and find easy, immediate solutions for surplus items.
+1/3 of all food is wasted
 
-The ReFood AI Solution
+Resulting in trillions of dollars lost annually
 
-ReFood AI provides a full-cycle solution:
+Responsible for 8–10% of global greenhouse gas emissions
 
-Preventive Intelligence: Uses AI to predict expiration and suggest immediate use.
+Households lack:
 
-Financial Incentive: Quantifies user savings to drive behavioral change.
+Tools to identify freshness
 
-Community Impact: Seamlessly connects surplus food to donation recipients.
+Ways to track expiration
 
- Key Features
+Easy options to repurpose or donate food
 
-1. AI Food Scanner (Multi-Modal Vision)
+✅ The ReFood AI Solution
 
-Our core feature uses AI to transform a simple photograph into actionable insights:
+ReFood AI offers a full-cycle ecosystem:
 
-Accurate Food Identification & Freshness: Identifies the food item and provides a freshness assessment (Fresh, Needs Attention, Spoiled).
+Preventive Intelligence: AI predicts expiration and suggests immediate use.
 
-Storage Recommendations: Advises on optimal storage conditions to maximize shelf life.
+Financial Incentives: Shows how much money users save annually.
 
-Expiration Forecasting: Estimates the remaining usable days until spoilage.
+Community Impact: Connects surplus food to NGOs, shelters, and social centers.
 
-Recipe Generation: Offers detailed recipes specifically designed to use the identified ingredients or potential leftovers.
+✨ Key Features
+1️⃣ 🤖 AI Food Scanner (Multi-Modal Vision)
 
-2. AI Chat Assistant
+Transforms a simple photo into powerful insights:
 
-An advanced chatbot available 24/7 to answer complex queries regarding:
+Food Identification & Freshness Level
 
-Food waste reduction techniques.
+Storage Recommendations
 
-Meal planning strategies.
+Expiration Forecasting
 
-Creative ways to use common leftovers.
+Leftover-Based Recipe Generation
 
-3. Real-Time Analytics & Financial Tools
+2️⃣ 💬 AI Chat Assistant
 
-We empower users with clear data on their impact and savings:
+A 24/7 intelligent chatbot that provides:
 
-Savings Calculator: Users input their family size and monthly grocery budget to receive a personalized annual savings projection achievable by reducing food waste.
+Techniques to reduce food waste
 
-Real-Time Waste Monitor: Displays live, simulated global food waste metrics to highlight the scale of the problem and motivate users.
+Meal planning strategies
 
-Waste Reduction Charts: Visual projections illustrating how the user's adoption of ReFood AI improves their personal waste profile over time.
+Creative leftover ideas
 
-4. Community & Gamification (Leaderboards)
+3️⃣ 📊 Real-Time Analytics & Financial Tools
 
-We foster a community of "Food Saviors":
+Savings Calculator:
+Input family size + grocery budget → get projected annual savings.
 
-Donation Platform: Users can register surplus food and instantly find nearby NGOs, Homeless Shelters, and Animal Shelters for drop-off or pickup.
+Global Waste Live Monitor:
+Displays real-time simulated global food waste.
 
-Leaderboards: Users compete based on quantifiable impact metrics:
+User Progress Charts:
+Shows how ReFood reduces personal waste over time.
 
-Most Money Saved (Financial Impact)
+4️⃣ 🌍 Community & Gamification
+🌱 Donation Platform
 
-Most Food Donated (Social Impact)
+Find nearby:
 
-Most Eco-Friendly (Environmental Impact)
+NGOs
 
-Review System: Allows users to share their experiences and build trust in the platform.
+Homeless shelters
 
-5. Food Saver Game
+Animal shelters
 
-A fun, casual game where users catch falling food items before they hit the ground, reinforcing the core mission of waste prevention.
+🏆 Leaderboards (Three Categories)
 
- Technology Stack (UniHack 2025)
+Most Money Saved
 
-Our application is built on a robust, cross-platform architecture focused on speed and real-time data processing.
+Most Food Donated
 
-Category
+Most Eco-Friendly User
 
-Technology
+⭐ Review System
 
-Purpose
+Users can leave feedback and share experiences.
 
-Frontend/Platform
+5️⃣ 🎮 Food Saver Game
 
-Flutter / Dart
+A fun mini-game where users catch falling food items to prevent virtual waste — reinforcing real-world habits.
 
-Single codebase for Web, Android, and Windows development. Ensures full responsiveness across all screen sizes.
+🛠️ Technology Stack (UniHack 2025 Edition)
+Category	Technology	Purpose
+Frontend / Platform	Flutter / Dart	Single codebase for Web, Android, Windows
+AI / Vision	Gemini API (google_generative_ai)	Image analysis, freshness prediction, chatbot logic
+Data Persistence	Hive / Hive Flutter	Local storage (scores, settings, donation drafts)
+Maps & Location	flutter_map / geolocator	Displays donation locations & geodata
+Charts & Analytics	fl_chart	Interactive real-time charts
+🖼️ Application Screenshots
 
-AI / Machine Vision
+(Add your actual images under /assets/ and update the paths)
 
-Gemini API (google_generative_ai SDK)
+Feature	Preview
+Dashboard	
 
-Used for image analysis, freshness assessment, and contextual ChatBot responses.
+Savings Calculator	
 
-Data Persistence
+Food Scanner	
 
-Hive / Hive Flutter
-
-High-performance local storage solution for user scores, settings, and form data (e.g., pending donations/reviews).
-
-Mapping / Location
-
-flutter_map / geolocator
-
-Displays map layers and retrieves real-time geographical data for nearby donation centers.
-
-Data Visualization
-
-fl_chart
-
-Used to generate interactive Line, Bar, and Pie charts for analytics and savings projection screens.
-
- Application Screenshots
-
-Feature
-
-Description
-
-Dashboard
-
-The centralized hub offering quick access to the AI Scanner, Chat, and Donation tools.
-
-Savings Calculator
-
-Interactive form showing projected monthly and annual savings based on user input.
-
-
-
-
-
-Food Scanner
-
-The screen showing a photo ready for analysis, with the Analyze button.
-
-
-
-
-
-Donation Flow
-
-The interface for selecting a recipient (Animal Shelters, NGOs, Homeless) and submitting pickup details.
-
-
-
-
+Donation Flow	
 🏃 Getting Started (Local Setup)
+✔ Prerequisites
 
-To run ReFood AI locally, ensure you have the Flutter SDK installed.
+Flutter SDK installed
 
-Clone the repository:
+A valid Gemini API key
 
-git clone [Your Repository URL]
+A MapTiler key
+
+1. Clone the repository
+git clone https://github.com/your-user/ReFood-AI.git
 cd ReFood-AI
 
-
-Install dependencies:
-
+2. Install dependencies
 flutter pub get
 
-
-Setup API Keys (Crucial for AI/Mapping):
-
-Obtain a Gemini API Key from Google AI Studio.
-
-Create a file named .env in the root directory and add your keys:
-
+3. Create .env file (Important)
 GEMINI_API_KEY=YOUR_GEMINI_KEY
-MAPTILER_KEY=YOUR_MAPTILER_KEY 
+MAPTILER_KEY=YOUR_MAPTILER_KEY
 
-
-Run the application (Web Recommended):
-
+4. Run the app (recommended: Web)
 flutter run -d chrome
 
-
- Team & Contributions
+👩‍💻 Team & Contributions
 
 This project was proudly developed by [Your Team Name] for UniHack 2025.
 
-Name
+Name	Role	GitHub
+Your Name	Your Role	@YourGitHub
 
-Role
+Member 2	Role	@GitHubHandle
 
-GitHub
+Member 3	Role	@GitHubHandle
 
-[Your Name]
-
-[Your Role]
-
-[@YourGitHubHandle]
-
-[Team Member 2]
-
-[Their Role]
-
-[@TheirGitHubHandle]
-
-[Team Member 3]
-
-[Their Role]
-
-[@TheirGitHubHandle]
-
-[Team Member 4]
-
-[Their Role]
-
-[@TheirGitHubHandle]
-
-We believe ReFood AI can be the definitive tool in the global fight against food waste! Sign by AQUALIX SLAYERS TEAM
+Member 4	Role	@GitHubHandle
+🌟 We believe ReFood AI can become the world’s most powerful tool against food waste.
