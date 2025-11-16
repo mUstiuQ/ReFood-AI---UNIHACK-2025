@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import '../app_theme.dart'; // Import shared theme
-import '../widgets/neon_background.dart'; // Import shared widget
+import '../app_theme.dart';
+import '../widgets/neon_background.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// --- Page Constants ---
 const double cardWidth = 320;
-// Increased height to make room for the extra field
 const double cardHeight = 560;
 
-// --- Main Sign Up Page Widget ---
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -20,6 +18,19 @@ class _SignUpPageState extends State<SignUpPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -33,10 +44,55 @@ class _SignUpPageState extends State<SignUpPage>
     _controller.addListener(() => setState(() {}));
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Future<void> _signUp() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
+    final String confirmPassword = _confirmPasswordController.text.trim();
+
+    if (password != confirmPassword) {
+      Navigator.pop(context); // Dismiss loading circle
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match!")),
+      );
+      return; // Stop the function
+    }
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Dismiss loading circle
+        Navigator.pop(context); // Goes back to the login page
+      }
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // Dismiss loading circle
+      String errorMessage = "An error occurred. Please try again.";
+      if (e.code == 'weak-password') {
+        errorMessage = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        errorMessage = 'The account already exists for that email.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'The email address is not valid.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An unexpected error occurred: ${e.toString()}")),
+      );
+    }
   }
 
   @override
@@ -48,7 +104,6 @@ class _SignUpPageState extends State<SignUpPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // --- This is the animated card ---
             ClipRRect(
               borderRadius: const BorderRadius.all(
                 Radius.circular(20),
@@ -56,7 +111,6 @@ class _SignUpPageState extends State<SignUpPage>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // 1. Base card with shadow
                   Container(
                     width: cardWidth,
                     height: cardHeight,
@@ -71,7 +125,6 @@ class _SignUpPageState extends State<SignUpPage>
                       ],
                     ),
                   ),
-                  // 2. Top-left animated border
                   Positioned(
                     top: cardHeight / 2,
                     left: cardWidth / 2,
@@ -86,7 +139,6 @@ class _SignUpPageState extends State<SignUpPage>
                       ],
                     ),
                   ),
-                  // 3. Bottom-right animated border
                   Positioned(
                     bottom: cardHeight / 2,
                     right: cardWidth / 2,
@@ -116,21 +168,19 @@ class _SignUpPageState extends State<SignUpPage>
                           Radius.circular(20),
                         ),
                       ),
-                      // --- This is the Sign Up Form ---
                       child: SingleChildScrollView(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(height: 25),
-                            // Logo (uses the same asset)
                             Image.asset(
-                              'assets/images/logo.jpg',
+                              'assets/images/logo.png',
                               width: 100,
                               height: 100,
                             ),
                             const SizedBox(height: 25),
-                            // Email Field
                             TextField(
+                              controller: _emailController, // <-- 5. ATTACHED
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
                                 prefixIcon:
@@ -152,8 +202,8 @@ class _SignUpPageState extends State<SignUpPage>
                               keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 15),
-                            // Password Field
                             TextField(
+                              controller: _passwordController, // <-- 5. ATTACHED
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
@@ -175,8 +225,9 @@ class _SignUpPageState extends State<SignUpPage>
                               ),
                             ),
                             const SizedBox(height: 15),
-                            // *** NEW FIELD ***
                             TextField(
+                              controller:
+                              _confirmPasswordController, // <-- 5. ATTACHED
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
@@ -198,11 +249,8 @@ class _SignUpPageState extends State<SignUpPage>
                               ),
                             ),
                             const SizedBox(height: 25),
-                            // *** BUTTON TEXT CHANGED ***
                             ElevatedButton(
-                              onPressed: () {
-                                // Sign up logic
-                              },
+                              onPressed: _signUp, // <-- 6. CONNECTED
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryGreen,
                                 foregroundColor: Colors.white,
@@ -221,13 +269,11 @@ class _SignUpPageState extends State<SignUpPage>
                           ],
                         ),
                       ),
-                      // --- End of form ---
                     ),
                   ),
                 ],
               ),
             ),
-            // --- "Go Back" Button ---
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -235,7 +281,6 @@ class _SignUpPageState extends State<SignUpPage>
                     style: TextStyle(color: grey)),
                 TextButton(
                   onPressed: () {
-                    // This will close the sign up page and go back
                     Navigator.pop(context);
                   },
                   child: const Text(
