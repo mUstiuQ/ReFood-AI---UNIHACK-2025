@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:unihack_2025/DashboardScreen.dart';
+import 'package:unihack_2025/pages/login_page.dart';
 import 'NewStartPage.dart';
 import 'chatbot_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Recomandat pentru aplicațiile Flutter
       title: 'ReFood AI App',
       // 2. Apelarea codului tău:
-      home: const NewStartPage(),
+      home: const LoginPage(),
     );
   }
 }

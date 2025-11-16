@@ -3,6 +3,7 @@ import 'dart:math';
 import 'signup_page.dart';
 import '../app_theme.dart'; // Import shared theme
 import '../widgets/neon_background.dart'; // Import shared widget
+import '../NewStartPage.dart';
 
 // --- Page Constants ---
 const double cardWidth = 320;
@@ -21,6 +22,10 @@ class _LoginPageState extends State<LoginPage>
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
+  // controllere pentru demo (nu le folosim la validare acum)
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +41,19 @@ class _LoginPageState extends State<LoginPage>
   @override
   void dispose() {
     _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+
+  void _fakeLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NewStartPage(),
+      ),
+    );
   }
 
   @override
@@ -104,7 +121,7 @@ class _LoginPageState extends State<LoginPage>
                   // 4. Inner container with form
                   GestureDetector(
                     onTap: () {
-                      FocusManager.instance.primaryFocus!.unfocus();
+                      FocusManager.instance.primaryFocus?.unfocus();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -123,12 +140,13 @@ class _LoginPageState extends State<LoginPage>
                           children: [
                             const SizedBox(height: 25),
                             Image.asset(
-                              'assets/images/logo.jpg',
+                              'assets/images/logo.png',
                               width: 100,
                               height: 100,
                             ),
                             const SizedBox(height: 25),
                             TextField(
+                              controller: _emailController,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
                                 prefixIcon:
@@ -138,19 +156,24 @@ class _LoginPageState extends State<LoginPage>
                                 fillColor: Colors.grey[100],
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                      color: Colors.grey[300]!),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: primaryGreen, width: 2),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: primaryGreen,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                               keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 15),
                             TextField(
+                              controller: _passwordController,
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
@@ -161,20 +184,26 @@ class _LoginPageState extends State<LoginPage>
                                 fillColor: Colors.grey[100],
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                      color: Colors.grey[300]!),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: primaryGreen, width: 2),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: primaryGreen,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  // pentru demo nu facem nimic aici
+                                },
                                 child: const Text(
                                   'Forgot Password?',
                                   style: TextStyle(color: primaryGreen),
@@ -182,7 +211,7 @@ class _LoginPageState extends State<LoginPage>
                               ),
                             ),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: _fakeLogin, // 👈 aici e magăria
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryGreen,
                                 foregroundColor: Colors.white,
@@ -194,7 +223,9 @@ class _LoginPageState extends State<LoginPage>
                               child: const Text(
                                 'Login',
                                 style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -211,21 +242,25 @@ class _LoginPageState extends State<LoginPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("Don't have an account?",
-                    style: TextStyle(color: grey)),
+                const Text(
+                  "Don't have an account?",
+                  style: TextStyle(color: grey),
+                ),
                 TextButton(
                   onPressed: () {
-                    // This is the navigation logic
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const SignUpPage()),
+                        builder: (context) => const SignUpPage(),
+                      ),
                     );
                   },
                   child: const Text(
                     'Sign Up',
                     style: TextStyle(
-                        color: primaryGreen, fontWeight: FontWeight.bold),
+                      color: primaryGreen,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 )
               ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../app_theme.dart'; // Import shared theme
 import '../widgets/neon_background.dart'; // Import shared widget
+import 'login_page.dart'; // <--- ca să putem naviga înapoi la LoginPage
 
 // --- Page Constants ---
 const double cardWidth = 320;
@@ -21,6 +22,11 @@ class _SignUpPageState extends State<SignUpPage>
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
+  // Controllere pentru câmpuri (utile dacă vrei ulterior să legi de backend)
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +42,57 @@ class _SignUpPageState extends State<SignUpPage>
   @override
   void dispose() {
     _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
+  }
+
+  /// 🔥 DEMO: „magărie” de prezentare
+  /// Nu verifică nimic, nu scrie în baza de date.
+  /// Doar arată cum AR ARĂTA logica reală (comentată)
+  /// și apoi te duce înapoi la LoginPage.
+  Future<void> _fakeSignUp() async {
+    // -----------------------------
+    // AICI AR FI LOGICA REALĂ CU BAZA DE DATE (Firebase, API, etc.)
+    // Toată secțiunea de mai jos e DOAR EXEMPLU și este comentată.
+    //
+    // import 'package:firebase_auth/firebase_auth.dart';
+    // import 'package:cloud_firestore/cloud_firestore.dart';
+    //
+    // try {
+    //   final email = _emailController.text.trim();
+    //   final password = _passwordController.text.trim();
+    //
+    //   // 1. Creare user în Firebase Auth
+    //   final userCredential = await FirebaseAuth.instance
+    //       .createUserWithEmailAndPassword(email: email, password: password);
+    //
+    //   // 2. Salvare info user și în Firestore
+    //   final user = userCredential.user;
+    //   if (user != null) {
+    //     await FirebaseFirestore.instance
+    //         .collection('users')
+    //         .doc(user.uid)
+    //         .set({
+    //       'email': email,
+    //       'createdAt': FieldValue.serverTimestamp(),
+    //     });
+    //   }
+    // } catch (e) {
+    //   // tratare erori reale
+    //   debugPrint('Sign up error: $e');
+    // }
+    // -----------------------------
+
+    // Pentru DEMO: mergem direct înapoi la LoginPage
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LoginPage(),
+      ),
+    );
   }
 
   @override
@@ -104,7 +160,7 @@ class _SignUpPageState extends State<SignUpPage>
                   // 4. Inner container with form
                   GestureDetector(
                     onTap: () {
-                      FocusManager.instance.primaryFocus!.unfocus();
+                      FocusManager.instance.primaryFocus?.unfocus();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -124,29 +180,37 @@ class _SignUpPageState extends State<SignUpPage>
                             const SizedBox(height: 25),
                             // Logo (uses the same asset)
                             Image.asset(
-                              'assets/images/logo.jpg',
+                              'assets/images/logo.png',
                               width: 100,
                               height: 100,
                             ),
                             const SizedBox(height: 25),
                             // Email Field
                             TextField(
+                              controller: _emailController,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                prefixIcon:
-                                Icon(Icons.email, color: Colors.grey[600]),
+                                prefixIcon: Icon(
+                                  Icons.email,
+                                  color: Colors.grey[600],
+                                ),
                                 labelText: 'Email',
                                 filled: true,
                                 fillColor: Colors.grey[100],
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: primaryGreen, width: 2),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: primaryGreen,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                               keyboardType: TextInputType.emailAddress,
@@ -154,55 +218,69 @@ class _SignUpPageState extends State<SignUpPage>
                             const SizedBox(height: 15),
                             // Password Field
                             TextField(
+                              controller: _passwordController,
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                prefixIcon:
-                                Icon(Icons.lock, color: Colors.grey[600]),
+                                prefixIcon: Icon(
+                                  Icons.lock,
+                                  color: Colors.grey[600],
+                                ),
                                 labelText: 'Password',
                                 filled: true,
                                 fillColor: Colors.grey[100],
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: primaryGreen, width: 2),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: primaryGreen,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 15),
-                            // *** NEW FIELD ***
+                            // Confirm Password Field
                             TextField(
+                              controller: _confirmController,
                               obscureText: true,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.lock_clock_outlined,
-                                    color: Colors.grey[600]),
+                                prefixIcon: Icon(
+                                  Icons.lock_clock_outlined,
+                                  color: Colors.grey[600],
+                                ),
                                 labelText: 'Confirm Password',
                                 filled: true,
                                 fillColor: Colors.grey[100],
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: primaryGreen, width: 2),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: primaryGreen,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 25),
-                            // *** BUTTON TEXT CHANGED ***
+                            // Button
                             ElevatedButton(
-                              onPressed: () {
-                                // Sign up logic
-                              },
+                              onPressed: _fakeSignUp, // 👈 MAGĂRIA DE DEMO
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryGreen,
                                 foregroundColor: Colors.white,
@@ -214,7 +292,9 @@ class _SignUpPageState extends State<SignUpPage>
                               child: const Text(
                                 'Sign Up',
                                 style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -231,17 +311,26 @@ class _SignUpPageState extends State<SignUpPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("Already have an account?",
-                    style: TextStyle(color: grey)),
+                const Text(
+                  "Already have an account?",
+                  style: TextStyle(color: grey),
+                ),
                 TextButton(
                   onPressed: () {
-                    // This will close the sign up page and go back
-                    Navigator.pop(context);
+                    // Ne întoarcem la LoginPage
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginPage(),
+                      ),
+                    );
                   },
                   child: const Text(
                     'Login',
                     style: TextStyle(
-                        color: primaryGreen, fontWeight: FontWeight.bold),
+                      color: primaryGreen,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 )
               ],

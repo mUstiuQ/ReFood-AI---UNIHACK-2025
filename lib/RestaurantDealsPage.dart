@@ -1,9 +1,8 @@
 // lib/pages/restaurant_deals_page.dart
 //  flutter_map: ^7.0.0
-//   latlong2: ^0.9.0
-//   geolocator: ^12.0.0
-//   http: ^1.2.0
-
+//  latlong2: ^0.9.0
+//  geolocator: ^12.0.0
+//  http: ^1.2.0
 
 import 'dart:convert';
 import 'dart:math';
@@ -359,8 +358,8 @@ out center 40;
           _containsAny(cuisine, ['pizza', 'italian'])) {
         description =
         'Surplus pizza slices and boxes with toppings still fresh, discounted before closing.';
-      } else if (_containsAny(lowerName,
-          ['lidl', 'kaufland', 'mega image', 'profi', 'penny', 'carrefour']) ||
+      } else if (_containsAny(
+          lowerName, ['lidl', 'kaufland', 'mega image', 'profi', 'penny', 'carrefour']) ||
           _containsAny(shop, ['supermarket', 'convenience'])) {
         description =
         'Grocery deal box with leftover cucumbers, yoghurt, salad mix and other near-date items.';
@@ -647,8 +646,8 @@ out center 40;
     }
 
     // Supermarkets / grocery: Lidl, Kaufland, Mega, Profi, Penny, Carrefour
-    if (_containsAny(lowerName,
-        ['lidl', 'kaufland', 'mega image', 'profi', 'penny', 'carrefour'])) {
+    if (_containsAny(
+        lowerName, ['lidl', 'kaufland', 'mega image', 'profi', 'penny', 'carrefour'])) {
       return [
         _DealOption(
           title: 'Cucumbers & yoghurt box',
@@ -743,8 +742,8 @@ out center 40;
     }
 
     // Sushi / Asian / wok
-    if (_containsAny(
-        lowerName, ['sushi', 'wok', 'ramen', 'thai', 'asian', 'chinese']) ||
+    if (_containsAny(lowerName,
+        ['sushi', 'wok', 'ramen', 'thai', 'asian', 'chinese']) ||
         deal.description.toLowerCase().contains('sushi')) {
       return [
         _DealOption(
@@ -1231,25 +1230,28 @@ out center 40;
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         const SizedBox(width: 8),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Restaurant & Shop Deals',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF022C22),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Restaurant & Shop Deals',
+                style: TextStyle(
+                  fontSize: 24, // puțin mai mic pentru ecrane mai înguste
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF022C22),
+                ),
               ),
-            ),
-            Text(
-              'Fresh food, surplus meals & grocery bargains near you',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF4B5563),
+              SizedBox(height: 2),
+              Text(
+                'Fresh food, surplus meals & grocery bargains near you',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF4B5563),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -1302,10 +1304,14 @@ out center 40;
   }
 
   Widget _buildMap(List<RestaurantDeal> filtered) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    double mapHeight = screenHeight * 0.28; // ~28% din înălțime
+    mapHeight = mapHeight.clamp(220.0, 320.0);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: SizedBox(
-        height: 260,
+        height: mapHeight,
         child: Stack(
           children: [
             FlutterMap(
@@ -1415,12 +1421,15 @@ out center 40;
   }
 
   Widget _buildDealsList(List<RestaurantDeal> filtered) {
+    final width = MediaQuery.of(context).size.width;
+    final bool isTablet = width >= 700;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 1,
-        childAspectRatio: 3.4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isTablet ? 2 : 1,
+        childAspectRatio: isTablet ? 3.2 : 2.1,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
@@ -1442,16 +1451,15 @@ out center 40;
     return InkWell(
       key: cardKey,
       onTap: () => _focusOnDealFromList(deal),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+
+          final border = Border.all(
             color: selected ? const Color(0xFF22C55E) : Colors.transparent,
             width: 1.5,
-          ),
-          boxShadow: [
+          );
+          final boxShadow = [
             BoxShadow(
               color: selected
                   ? const Color(0xFF22C55E).withOpacity(0.35)
@@ -1459,219 +1467,282 @@ out center 40;
               blurRadius: selected ? 18 : 10,
               offset: const Offset(0, 6),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(20),
+          ];
+
+          // Layout vertical pentru ecrane foarte înguste (mai mic decât S20 FE)
+          if (isNarrow) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: border,
+                boxShadow: boxShadow,
               ),
-              child: SizedBox(
-                width: 190,
-                height: double.infinity,
-                child: Image.network(
-                  deal.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: const Color(0xFFE5E7EB),
-                    child: const Center(
-                      child: Icon(
-                        Icons.restaurant,
-                        color: Color(0xFF9CA3AF),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 150,
+                      child: Image.network(
+                        deal.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                              color: const Color(0xFFE5E7EB),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.restaurant,
+                                  color: Color(0xFF9CA3AF),
+                                ),
+                              ),
+                            ),
                       ),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    child: _buildCardContent(deal),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            // Layout pe rând pentru telefoane gen Samsung S20 FE și mai mari
+            final imageWidth =
+            min(190.0, constraints.maxWidth * 0.38); // adaptiv
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: border,
+                boxShadow: boxShadow,
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(
+                      left: Radius.circular(20),
+                    ),
+                    child: SizedBox(
+                      width: imageWidth,
+                      height: double.infinity,
+                      child: Image.network(
+                        deal.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFFE5E7EB),
+                          child: const Center(
+                            child: Icon(
+                              Icons.restaurant,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      child: _buildCardContent(deal),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildCardContent(RestaurantDeal deal) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // discount + rating
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF16A34A), Color(0xFF22C55E)],
                 ),
               ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.local_offer,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    deal.discountLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            Expanded(
-              child: Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // discount + rating
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF16A34A), Color(0xFF22C55E)],
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.local_offer,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                deal.discountLabel,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 18,
-                              color: Color(0xFFFCD34D),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              deal.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF022C22),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      deal.restaurant,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF022C22),
-                      ),
-                    ),
-                    if (deal.address != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.place,
-                            size: 14,
-                            color: Color(0xFF16A34A),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              deal.address!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF4B5563),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Text(
-                      deal.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF4B5563),
-                      ),
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Color(0xFF6B7280),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Ends in ${deal.timeLeft}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: Color(0xFF6B7280),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          deal.locationLabel,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => _showDealDetails(deal),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF16A34A),
-                              foregroundColor: Colors.white,
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text('Get deal'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _openInMaps(deal),
-                            style: OutlinedButton.styleFrom(
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 10),
-                              foregroundColor: const Color(0xFF16A34A),
-                              side: const BorderSide(
-                                color: Color(0xFF16A34A),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                            child: const Text('Open in Maps'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+            Row(
+              children: [
+                const Icon(
+                  Icons.star_rounded,
+                  size: 18,
+                  color: Color(0xFFFCD34D),
                 ),
+                const SizedBox(width: 4),
+                Text(
+                  deal.rating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF022C22),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          deal.restaurant,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF022C22),
+          ),
+        ),
+        if (deal.address != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(
+                Icons.place,
+                size: 14,
+                color: Color(0xFF16A34A),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  deal.address!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 4),
+        Text(
+          deal.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF4B5563),
+          ),
+        ),
+        const Spacer(),
+        Row(
+          children: [
+            const Icon(
+              Icons.access_time,
+              size: 14,
+              color: Color(0xFF6B7280),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Ends in ${deal.timeLeft}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            const Icon(
+              Icons.location_on,
+              size: 14,
+              color: Color(0xFF6B7280),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              deal.locationLabel,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => _showDealDetails(deal),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF16A34A),
+                  foregroundColor: Colors.white,
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text('Get deal'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => _openInMaps(deal),
+                style: OutlinedButton.styleFrom(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 10),
+                  foregroundColor: const Color(0xFF16A34A),
+                  side: const BorderSide(
+                    color: Color(0xFF16A34A),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                child: const Text('Open in Maps'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
