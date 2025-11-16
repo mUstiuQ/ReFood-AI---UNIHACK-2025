@@ -1,6 +1,9 @@
 # ReFood AI: The Smart Kitchen Assistant
 ### TASTE IT! DON'T WASTE IT!
-![ReFood AI Logo](./LOGO_APP.png)
+<p align="center">
+  <img src="./LOGO_APP.png" alt="ReFood AI Logo" width="35%">
+</p>
+
 
 
 ![](https://img.shields.io/badge/Dart-8A2BE2) ![](https://img.shields.io/badge/C++-FFDD33) ![](https://img.shields.io/badge/CMake-F1) ![](https://img.shields.io/badge/Swift-335BFF)  ![](https://img.shields.io/badge/Flutter-FF3393) 
